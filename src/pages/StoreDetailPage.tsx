@@ -1,30 +1,54 @@
 import { useParams, Link } from 'react-router-dom';
 import { useStore } from '../hooks/useStores';
 import Card from '../components/ui/Card';
+import { formatPrice } from '../types';
 
 export default function StoreDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { data: store, isLoading } = useStore(Number(id));
+  const { data: store, isLoading, isError } = useStore(Number(id));
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="animate-pulse bg-white rounded-xl border border-gray-200 p-8 h-48" />
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-gray-200 rounded w-32" />
+          <div className="bg-white rounded-xl border border-gray-200 p-8">
+            <div className="h-8 bg-gray-200 rounded w-1/2 mb-2" />
+            <div className="h-4 bg-gray-200 rounded w-1/4 mb-6" />
+            <div className="h-4 bg-gray-200 rounded w-full mb-8" />
+            <div className="grid md:grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-gray-100 rounded-lg overflow-hidden">
+                  <div className="aspect-square bg-gray-200" />
+                  <div className="p-4 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-3/4" />
+                    <div className="h-5 bg-gray-200 rounded w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (!store) {
+  if (isError || !store) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <p className="text-lg text-gray-500">Store not found.</p>
+      <div className="max-w-5xl mx-auto px-4 py-16 text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+        </div>
+        <p className="text-lg text-gray-600 mb-2">Store not found.</p>
         <Link to="/products" className="text-primary-600 hover:text-primary-700 mt-4 inline-block">&larr; Back to products</Link>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-5xl mx-auto px-4 py-8">
       <Link to="/products" className="text-sm text-primary-600 hover:text-primary-700 mb-4 inline-block">
         &larr; Back to products
       </Link>
@@ -60,7 +84,7 @@ export default function StoreDetailPage() {
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-1">{product.name}</h3>
                   <p className="text-lg font-bold text-primary-600">
-                    Rp{Number(product.price).toLocaleString('id-ID')}
+                    {formatPrice(product.price)}
                   </p>
                   <p className="text-xs text-gray-500 mt-2">
                     {product.stock > 0 ? `Stock: ${product.stock}` : 'Out of stock'}
@@ -70,7 +94,14 @@ export default function StoreDetailPage() {
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-center py-8">No products in this store yet.</p>
+          <div className="text-center py-8">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-3">
+              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            </div>
+            <p className="text-gray-500">No products in this store yet.</p>
+          </div>
         )}
       </Card>
     </div>
