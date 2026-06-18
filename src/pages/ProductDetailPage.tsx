@@ -1,5 +1,8 @@
 import { useParams, Link } from 'react-router-dom';
+import { useState } from 'react';
 import { useProduct } from '../hooks/useProducts';
+import { useAddCartItem } from '../hooks/useBuyer';
+import { useAuthStore } from '../store/auth';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -8,6 +11,33 @@ import { formatPrice } from '../types';
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: product, isLoading, isError } = useProduct(Number(id));
+  const addItemMutation = useAddCartItem();
+  const { isAuthenticated, activeRole } = useAuthStore();
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const canAddToCart = isAuthenticated && activeRole === 'Buyer' && product && product.stock > 0;
+
+  const getErrorMessage = (err: any): string => {
+    const msg = err?.message;
+    if (typeof msg === 'string') return msg;
+    if (Array.isArray(msg)) return msg.filter(Boolean).join('. ');
+    if (msg && typeof msg === 'object') return JSON.stringify(msg);
+    return 'Failed to add to cart.';
+  };
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+    setFeedback(null);
+    try {
+      await addItemMutation.mutateAsync({ productId: product.id, quantity: 1 });
+      setFeedback({ type: 'success', message: 'Added to cart!' });
+    } catch (err: any) {
+      setFeedback({
+        type: 'error',
+        message: getErrorMessage(err),
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -81,10 +111,40 @@ export default function ProductDetailPage() {
             </div>
             <p className="text-gray-700 leading-relaxed mb-6">{product.description}</p>
 
-            {/* Add to Cart button placeholder - will be implemented in Phase 3B */}
-            <Button disabled className="w-full sm:w-auto">
-              Add to Cart
-            </Button>
+            {feedback && (
+              <div
+                className={`mb-4 p-3 rounded-lg text-sm ${
+                  feedback.type === 'success'
+                    ? 'bg-green-50 text-green-700 border border-green-200'
+                    : 'bg-red-50 text-red-700 border border-red-200'
+                }`}
+              >
+                {feedback.message}
+              </div>
+            )}
+
+            {!isAuthenticated ? (
+              <Link to="/login">
+                <Button className="w-full sm:w-auto">Login to Add to Cart</Button>
+              </Link>
+            ) : activeRole !== 'Buyer' ? (
+              <Button disabled className="w-full sm:w-auto">
+                Switch to Buyer Role to Purchase
+              </Button>
+            ) : product.stock <= 0 ? (
+              <Button disabled className="w-full sm:w-auto">
+                Out of Stock
+              </Button>
+            ) : (
+              <Button
+                onClick={handleAddToCart}
+                loading={addItemMutation.isPending}
+                disabled={addItemMutation.isPending}
+                className="w-full sm:w-auto"
+              >
+                Add to Cart
+              </Button>
+            )}
           </div>
         </div>
       </Card>

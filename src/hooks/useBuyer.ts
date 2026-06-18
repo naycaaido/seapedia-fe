@@ -7,6 +7,9 @@ import type {
   CreateAddressPayload,
   UpdateAddressPayload,
   TopUpWalletPayload,
+  Cart,
+  AddCartItemPayload,
+  UpdateCartItemPayload,
 } from '../types';
 
 // Wallet hooks
@@ -86,6 +89,64 @@ export function useSetDefaultAddress() {
       api.patch<Address>(`/addresses/${id}/default`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['addresses'] });
+    },
+  });
+}
+
+// Cart hooks
+
+interface UseCartOptions {
+  enabled?: boolean;
+}
+
+export function useCart(options?: UseCartOptions) {
+  return useQuery({
+    queryKey: ['cart'],
+    queryFn: () => api.get<Cart>('/cart'),
+    enabled: options?.enabled ?? true,
+  });
+}
+
+export function useAddCartItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: AddCartItemPayload) =>
+      api.post<Cart>('/cart/items', payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+    },
+  });
+}
+
+export function useUpdateCartItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: UpdateCartItemPayload }) =>
+      api.patch<Cart>(`/cart/items/${id}`, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+    },
+  });
+}
+
+export function useRemoveCartItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) =>
+      api.delete<Cart>(`/cart/items/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+    },
+  });
+}
+
+export function useClearCart() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      api.delete<Cart>('/cart/clear'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
   });
 }

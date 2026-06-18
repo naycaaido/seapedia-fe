@@ -1,10 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth';
+import { useCart } from '../../hooks/useBuyer';
 import Badge from '../ui/Badge';
 
 export default function Navbar() {
   const { isAuthenticated, user, activeRole, roles, logout } = useAuthStore();
   const navigate = useNavigate();
+  const { data: cart } = useCart({ enabled: isAuthenticated && activeRole === 'Buyer' });
 
   const handleLogout = () => {
     logout();
@@ -32,6 +34,8 @@ export default function Navbar() {
     return links[activeRole] || '/role-selection';
   };
 
+  const cartItemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
+
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4">
@@ -53,6 +57,21 @@ export default function Navbar() {
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
+                {activeRole === 'Buyer' && (
+                  <Link
+                    to="/buyer/cart"
+                    className="relative text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    {cartItemCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {cartItemCount > 99 ? '99+' : cartItemCount}
+                      </span>
+                    )}
+                  </Link>
+                )}
                 {activeRole && (
                   <Link
                     to={getDashboardLink()}

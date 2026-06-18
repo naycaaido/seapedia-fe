@@ -197,3 +197,40 @@ export interface UpdateAddressPayload {
 export interface TopUpWalletPayload {
   amount: number;
 }
+
+// Cart types
+
+export interface CartItem {
+  id: number;
+  cartId: number;
+  productId: number;
+  quantity: number;
+  product: {
+    id: number;
+    name: string;
+    price: string;
+    stock: number;
+    imageUrl: string | null;
+    deletedAt: string | null;
+    storeId: number;
+  };
+}
+
+export interface Cart {
+  id: number;
+  buyerId: number;
+  storeId: number | null;
+  items: CartItem[];
+  store: { id: number; name: string } | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AddCartItemPayload {
+  productId: number;
+  quantity: number;
+}
+
+export interface UpdateCartItemPayload {
+  quantity: number;
+}
