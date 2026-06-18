@@ -139,3 +139,61 @@ export function validateImageFile(file: File): string | null {
   }
   return null;
 }
+
+// Buyer types
+
+export interface Wallet {
+  id: number;
+  userId: number;
+  balance: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WalletTransaction {
+  id: number;
+  walletId: number;
+  type: 'TOP_UP' | 'PAYMENT' | 'REFUND' | 'ADJUSTMENT';
+  amount: string;
+  description: string;
+  referenceId: number | null;
+  createdAt: string;
+}
+
+export interface Address {
+  id: number;
+  buyerId: number;
+  recipientName: string;
+  phone: string;
+  addressDetail: string;
+  city: string | null;
+  province: string | null;
+  postalCode: string | null;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAddressPayload {
+  recipientName: string;
+  phone: string;
+  addressDetail: string;
+  city?: string;
+  province?: string;
+  postalCode?: string;
+  isDefault?: boolean;
+}
+
+export interface UpdateAddressPayload {
+  recipientName?: string;
+  phone?: string;
+  addressDetail?: string;
+  city?: string;
+  province?: string;
+  postalCode?: string;
+  isDefault?: boolean;
+}
+
+export interface TopUpWalletPayload {
+  amount: number;
+}
