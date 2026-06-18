@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSellerProduct, useUpdateProduct } from '../../hooks/useSeller';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import { validateImageFile } from '../../types';
 
 export default function EditProductPage() {
   const navigate = useNavigate();
@@ -11,12 +12,14 @@ export default function EditProductPage() {
   const productId = Number(id);
   const { data: product, isLoading } = useSellerProduct(productId);
   const updateProduct = useUpdateProduct();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [stock, setStock] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -25,9 +28,29 @@ export default function EditProductPage() {
       setDescription(product.description);
       setPrice(String(product.price));
       setStock(String(product.stock));
-      setImageUrl(product.imageUrl || '');
+      setImagePreview(product.imageUrl || null);
     }
   }, [product]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const error = validateImageFile(file);
+      if (error) {
+        setFormErrors((prev) => ({ ...prev, image: error }));
+        e.target.value = '';
+        return;
+      }
+      setFormErrors((prev) => {
+        const { image, ...rest } = prev;
+        return rest;
+      });
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,9 +73,9 @@ export default function EditProductPage() {
         payload: {
           name: name.trim(),
           description: description.trim(),
-          price: Number(price),
-          stock: Number(stock),
-          imageUrl: imageUrl.trim() || undefined,
+          price: String(Number(price)),
+          stock: String(Number(stock)),
+          ...(imageFile ? { image: imageFile } : {}),
         },
       });
       navigate('/seller/products');
@@ -125,12 +148,29 @@ export default function EditProductPage() {
               placeholder="e.g. 25"
             />
           </div>
-          <Input
-            label="Image URL (optional)"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="https://example.com/image.jpg"
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Product Image (optional)</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full px-3 py-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-500 transition-colors text-center"
+            >
+              {imagePreview ? (
+                <img src={imagePreview} alt="Preview" className="mx-auto h-32 object-contain" />
+              ) : (
+                <span className="text-gray-500">Click to select an image (JPEG, PNG, WebP, max 5MB)</span>
+              )}
+            </div>
+            {imageFile && (
+              <p className="text-sm text-gray-500 mt-1">New image selected: {imageFile.name}</p>
+            )}
+          </div>
           <div className="flex gap-3">
             <Button type="submit" loading={updateProduct.isPending}>
               Save Changes

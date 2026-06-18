@@ -3,6 +3,7 @@ import { useSellerProducts, useDeleteProduct } from '../../hooks/useSeller';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import { formatPrice } from '../../types';
 
 export default function MyProductsPage() {
   const { data: products, isLoading } = useSellerProducts();
@@ -42,27 +43,27 @@ export default function MyProductsPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-semibold text-gray-900">{product.name}</h3>
-                    {product.isActive ? (
+                    {!product.deletedAt ? (
                       <Badge variant="green" size="sm">Active</Badge>
                     ) : (
-                      <Badge variant="gray" size="sm">Inactive</Badge>
+                      <Badge variant="gray" size="sm">Deleted</Badge>
                     )}
                   </div>
                   <p className="text-sm text-gray-600 mb-2 line-clamp-2">
                     {product.description}
                   </p>
                   <div className="flex gap-4 text-sm text-gray-500">
-                    <span>Rp{product.price.toLocaleString('id-ID')}</span>
+                    <span>{formatPrice(product.price)}</span>
                     <span>Stock: {product.stock}</span>
                   </div>
                 </div>
                 <div className="flex gap-2 ml-4">
-                  {product.isActive && (
+                  {!product.deletedAt && (
                     <Link to={`/seller/products/${product.id}/edit`}>
                       <Button variant="secondary" size="sm">Edit</Button>
                     </Link>
                   )}
-                  {product.isActive && (
+                  {!product.deletedAt && (
                     <Button
                       variant="danger"
                       size="sm"
