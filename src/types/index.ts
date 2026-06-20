@@ -234,3 +234,95 @@ export interface AddCartItemPayload {
 export interface UpdateCartItemPayload {
   quantity: number;
 }
+
+// Checkout types
+
+export type DeliveryMethod = 'INSTANT' | 'NEXT_DAY' | 'REGULAR';
+
+export type OrderStatus = 'SEDANG_DIKEMAS' | 'MENUNGGU_PENGIRIM' | 'SEDANG_DIKIRIM' | 'PESANAN_SELESAI' | 'DIKEMBALIKAN';
+
+export interface CheckoutPayload {
+  addressId: number;
+  deliveryMethod: DeliveryMethod;
+  voucherCode?: string;
+  promoCode?: string;
+}
+
+// Order types
+
+export interface OrderItem {
+  id: number;
+  orderId: number;
+  productId: number | null;
+  productName: string;
+  productPrice: string;
+  quantity: number;
+  subtotal: string;
+  createdAt: string;
+}
+
+export interface OrderStatusHistory {
+  id: number;
+  orderId: number;
+  status: OrderStatus;
+  createdAt: string;
+}
+
+export interface Order {
+  id: number;
+  orderNumber: string;
+  buyerId: number;
+  storeId: number;
+  addressId: number;
+  voucherId: number | null;
+  promoId: number | null;
+  voucher: { code: string; name: string } | null;
+  promo: { code: string; name: string } | null;
+  shippingRecipientName: string;
+  shippingPhone: string;
+  shippingAddress: string;
+  deliveryMethod: DeliveryMethod;
+  subtotal: string;
+  discountAmount: string;
+  deliveryFee: string;
+  ppnAmount: string;
+  finalTotal: string;
+  status: OrderStatus;
+  paidAt: string;
+  expiredAt: string;
+  completedAt: string | null;
+  returnedAt: string | null;
+  items: OrderItem[];
+  statusHistory: OrderStatusHistory[];
+  store: { id: number; name: string } | null;
+  address: {
+    id: number;
+    recipientName: string;
+    phone: string;
+    addressDetail: string;
+    city: string | null;
+    province: string | null;
+    postalCode: string | null;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Discount types
+
+export interface DiscountValidationResult {
+  code: string;
+  type: 'voucher' | 'promo';
+  discountType: 'PERCENTAGE' | 'FIXED_AMOUNT';
+  discountValue: string;
+  discountAmount: string;
+  originalDiscount: string;
+  minPurchaseAmount: string;
+  maxDiscountAmount: string;
+}
+
+export const DELIVERY_FEES: Record<DeliveryMethod, number> = {
+  INSTANT: 20000,
+  NEXT_DAY: 12000,
+  REGULAR: 8000,
+};

@@ -24,6 +24,9 @@ import EditProductPage from './pages/seller/EditProductPage';
 import WalletPage from './pages/buyer/WalletPage';
 import AddressesPage from './pages/buyer/AddressesPage';
 import CartPage from './pages/buyer/CartPage';
+import CheckoutPage from './pages/buyer/CheckoutPage';
+import OrdersPage from './pages/buyer/OrdersPage';
+import OrderDetailPage from './pages/buyer/OrderDetailPage';
 
 export default function App() {
   const { isAuthenticated, fetchProfile } = useAuthStore();
@@ -66,6 +69,9 @@ export default function App() {
             <Route path="/buyer/wallet" element={<WalletPage />} />
             <Route path="/buyer/addresses" element={<AddressesPage />} />
             <Route path="/buyer/cart" element={<CartPage />} />
+            <Route path="/buyer/checkout" element={<CheckoutPage />} />
+            <Route path="/buyer/orders" element={<OrdersPage />} />
+            <Route path="/buyer/orders/:id" element={<OrderDetailPage />} />
           </Route>
 
           <Route element={<ProtectedRoute roles={['Driver']} />}>

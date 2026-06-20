@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   useCart,
   useUpdateCartItem,
@@ -7,12 +7,12 @@ import {
 } from '../../hooks/useBuyer';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
-import Badge from '../../components/ui/Badge';
 import Modal from '../../components/ui/Modal';
 import { formatPrice } from '../../types';
 import { useState } from 'react';
 
 export default function CartPage() {
+  const navigate = useNavigate();
   const { data: cart, isLoading, isError } = useCart();
   const updateItemMutation = useUpdateCartItem();
   const removeItemMutation = useRemoveCartItem();
@@ -188,10 +188,9 @@ export default function CartPage() {
               <span className="text-xl font-bold text-primary-600">{formatPrice(subtotal)}</span>
             </div>
           </div>
-          <Button disabled className="w-full mt-4">
+          <Button className="w-full mt-4" onClick={() => navigate('/buyer/checkout')}>
             Proceed to Checkout
           </Button>
-          <p className="text-xs text-gray-400 text-center">Checkout coming soon</p>
         </div>
       </Card>
 

@@ -10,6 +10,9 @@ import type {
   Cart,
   AddCartItemPayload,
   UpdateCartItemPayload,
+  Order,
+  CheckoutPayload,
+  DiscountValidationResult,
 } from '../types';
 
 // Wallet hooks
@@ -148,5 +151,52 @@ export function useClearCart() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
+  });
+}
+
+// Checkout hook
+
+export function useCheckout() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CheckoutPayload) =>
+      api.post<Order>('/checkout', payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
+      queryClient.invalidateQueries({ queryKey: ['wallet-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+}
+
+// Order hooks
+
+export function useOrders() {
+  return useQuery({
+    queryKey: ['orders'],
+    queryFn: () => api.get<Order[]>('/orders'),
+  });
+}
+
+export function useOrder(id: number | undefined) {
+  return useQuery({
+    queryKey: ['orders', id],
+    queryFn: () => api.get<Order>(`/orders/${id}`),
+    enabled: !!id,
+  });
+}
+
+// Discount validation
+
+export function useValidateDiscount(code: string, subtotal: number) {
+  return useQuery({
+    queryKey: ['discount-validation', code, subtotal],
+    queryFn: () =>
+      api.get<DiscountValidationResult>(
+        `/discounts/validate?code=${encodeURIComponent(code)}&subtotal=${subtotal}`
+      ),
+    enabled: !!code && subtotal > 0,
+    staleTime: 30000,
   });
 }
