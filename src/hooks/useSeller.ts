@@ -8,6 +8,7 @@ import type {
   UpdateStorePayload,
   CreateProductFormData,
   UpdateProductFormData,
+  SellerOrder,
 } from '../types';
 import { toFormData } from '../types';
 
@@ -96,6 +97,36 @@ export function useDeleteProduct() {
       api.delete<SellerProduct>(`/seller/products/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seller-products'] });
+      queryClient.invalidateQueries({ queryKey: ['seller-dashboard'] });
+    },
+  });
+}
+
+// Seller order hooks
+
+export function useSellerOrders() {
+  return useQuery({
+    queryKey: ['seller-orders'],
+    queryFn: () => api.get<SellerOrder[]>('/seller/orders'),
+  });
+}
+
+export function useSellerOrder(id: number | undefined) {
+  return useQuery({
+    queryKey: ['seller-orders', id],
+    queryFn: () => api.get<SellerOrder>(`/seller/orders/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useProcessSellerOrder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) =>
+      api.post<SellerOrder>(`/seller/orders/${id}/process`),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ['seller-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['seller-orders', id] });
       queryClient.invalidateQueries({ queryKey: ['seller-dashboard'] });
     },
   });

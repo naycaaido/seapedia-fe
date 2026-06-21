@@ -326,3 +326,54 @@ export const DELIVERY_FEES: Record<DeliveryMethod, number> = {
   NEXT_DAY: 12000,
   REGULAR: 8000,
 };
+
+// Seller order types
+
+export interface SellerOrderBuyer {
+  id: number;
+  username: string;
+  fullName: string;
+  email?: string;
+  phone?: string | null;
+}
+
+export interface SellerOrder {
+  id: number;
+  orderNumber: string;
+  buyerId: number;
+  storeId: number;
+  addressId: number;
+  voucherId: number | null;
+  promoId: number | null;
+  voucher: { code: string; name: string } | null;
+  promo: { code: string; name: string } | null;
+  shippingRecipientName: string;
+  shippingPhone: string;
+  shippingAddress: string;
+  deliveryMethod: DeliveryMethod;
+  subtotal: string;
+  discountAmount: string;
+  deliveryFee: string;
+  ppnAmount: string;
+  finalTotal: string;
+  status: OrderStatus;
+  paidAt: string;
+  expiredAt: string;
+  completedAt: string | null;
+  returnedAt: string | null;
+  items: OrderItem[];
+  statusHistory?: OrderStatusHistory[];
+  store: { id: number; name: string } | null;
+  buyer?: SellerOrderBuyer | null;
+  address?: {
+    id: number;
+    recipientName: string;
+    phone: string;
+    addressDetail: string;
+    city: string | null;
+    province: string | null;
+    postalCode: string | null;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
-import { useSellerDashboard } from '../../hooks/useSeller';
+import { useSellerDashboard, useSellerOrders } from '../../hooks/useSeller';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 
 export default function SellerDashboard() {
   const { data: dashboard, isLoading } = useSellerDashboard();
+  const { data: orders, isError: ordersError } = useSellerOrders();
 
   if (isLoading) {
     return (
@@ -55,8 +56,21 @@ export default function SellerDashboard() {
           </Link>
         </Card>
         <Card header={<h2 className="font-semibold text-gray-900">Incoming Orders</h2>}>
-          <p className="text-sm text-gray-500 mb-4">Process orders from buyers.</p>
-          <div className="text-sm text-gray-400 italic">Coming in Level 4</div>
+          {ordersError ? (
+            <p className="text-sm text-red-500 mb-4">Failed to load orders.</p>
+          ) : orders ? (
+            <>
+              <p className="text-sm text-gray-500 mb-1">{orders.length} total orders</p>
+              <p className="text-sm text-orange-600 font-medium mb-4">
+                {orders.filter((o) => o.status === 'SEDANG_DIKEMAS').length} need processing
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-gray-500 mb-4">Loading orders...</p>
+          )}
+          <Link to="/seller/orders">
+            <Button variant="secondary" size="sm">View Orders</Button>
+          </Link>
         </Card>
       </div>
 

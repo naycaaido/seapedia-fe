@@ -21,6 +21,8 @@ import StoreManagementPage from './pages/seller/StoreManagementPage';
 import MyProductsPage from './pages/seller/MyProductsPage';
 import CreateProductPage from './pages/seller/CreateProductPage';
 import EditProductPage from './pages/seller/EditProductPage';
+import SellerOrdersPage from './pages/seller/SellerOrdersPage';
+import SellerOrderDetailPage from './pages/seller/SellerOrderDetailPage';
 import WalletPage from './pages/buyer/WalletPage';
 import AddressesPage from './pages/buyer/AddressesPage';
 import CartPage from './pages/buyer/CartPage';
@@ -62,6 +64,8 @@ export default function App() {
             <Route path="/seller/products" element={<MyProductsPage />} />
             <Route path="/seller/products/new" element={<CreateProductPage />} />
             <Route path="/seller/products/:id/edit" element={<EditProductPage />} />
+            <Route path="/seller/orders" element={<SellerOrdersPage />} />
+            <Route path="/seller/orders/:id" element={<SellerOrderDetailPage />} />
           </Route>
 
           <Route element={<ProtectedRoute roles={['Buyer']} />}>
