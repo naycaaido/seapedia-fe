@@ -321,6 +321,70 @@ export interface DiscountValidationResult {
   maxDiscountAmount: string;
 }
 
+// Driver types
+
+export type DeliveryJobStatus = 'AVAILABLE' | 'TAKEN' | 'COMPLETED' | 'CANCELLED' | 'RETURNED';
+
+export interface DeliveryJob {
+  id: number;
+  orderId: number;
+  driverId: number | null;
+  deliveryMethod: DeliveryMethod;
+  deliveryFee: string;
+  earning: string | null;
+  status: DeliveryJobStatus;
+  takenAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  order?: {
+    id: number;
+    orderNumber: string;
+    status: OrderStatus;
+    store: { id: number; name: string };
+    address?: {
+      id: number;
+      recipientName: string;
+      phone: string;
+      addressDetail: string;
+      city: string | null;
+      province: string | null;
+      postalCode: string | null;
+    } | null;
+    items?: Array<{
+      id: number;
+      productName: string;
+      productPrice: string;
+      quantity: number;
+    }>;
+    deliveryMethod?: DeliveryMethod;
+    subtotal?: string;
+    deliveryFee?: string;
+    finalTotal?: string;
+  } | null;
+  driver?: {
+    id: number;
+    username: string;
+    fullName: string;
+  } | null;
+}
+
+export interface DriverEarning {
+  id: number;
+  driverId: number;
+  deliveryJobId: number;
+  amount: string;
+  createdAt: string;
+  deliveryJob?: DeliveryJob | null;
+}
+
+export interface DriverEarningsSummary {
+  totalEarnings: string;
+  totalCompletedJobs: number;
+  averageEarningPerJob: string;
+  earnings: DriverEarning[];
+}
+
 export const DELIVERY_FEES: Record<DeliveryMethod, number> = {
   INSTANT: 20000,
   NEXT_DAY: 12000,

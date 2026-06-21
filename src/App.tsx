@@ -17,6 +17,9 @@ import AdminDashboard from './pages/dashboard/AdminDashboard';
 import SellerDashboard from './pages/dashboard/SellerDashboard';
 import BuyerDashboard from './pages/dashboard/BuyerDashboard';
 import DriverDashboard from './pages/dashboard/DriverDashboard';
+import AvailableJobsPage from './pages/driver/AvailableJobsPage';
+import ActiveJobPage from './pages/driver/ActiveJobPage';
+import EarningsPage from './pages/driver/EarningsPage';
 import StoreManagementPage from './pages/seller/StoreManagementPage';
 import MyProductsPage from './pages/seller/MyProductsPage';
 import CreateProductPage from './pages/seller/CreateProductPage';
@@ -80,6 +83,9 @@ export default function App() {
 
           <Route element={<ProtectedRoute roles={['Driver']} />}>
             <Route path="/dashboard/driver" element={<DriverDashboard />} />
+            <Route path="/driver/jobs" element={<AvailableJobsPage />} />
+            <Route path="/driver/active" element={<ActiveJobPage />} />
+            <Route path="/driver/earnings" element={<EarningsPage />} />
           </Route>
         </Route>
 
