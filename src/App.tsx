@@ -32,6 +32,15 @@ import CartPage from './pages/buyer/CartPage';
 import CheckoutPage from './pages/buyer/CheckoutPage';
 import OrdersPage from './pages/buyer/OrdersPage';
 import OrderDetailPage from './pages/buyer/OrderDetailPage';
+import UsersPage from './pages/admin/UsersPage';
+import StoresPage from './pages/admin/StoresPage';
+import ProductsPage from './pages/admin/ProductsPage';
+import AdminOrdersPage from './pages/admin/OrdersPage';
+import AdminOrderDetailPage from './pages/admin/AdminOrderDetailPage';
+import DeliveryJobsPage from './pages/admin/DeliveryJobsPage';
+import DiscountsPage from './pages/admin/DiscountsPage';
+import OverdueOrdersPage from './pages/admin/OverdueOrdersPage';
+import SystemTimePage from './pages/admin/SystemTimePage';
 
 export default function App() {
   const { isAuthenticated, fetchProfile } = useAuthStore();
@@ -59,6 +68,15 @@ export default function App() {
 
           <Route element={<ProtectedRoute roles={['Admin']} />}>
             <Route path="/dashboard/admin" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<UsersPage />} />
+            <Route path="/admin/stores" element={<StoresPage />} />
+            <Route path="/admin/products" element={<ProductsPage />} />
+            <Route path="/admin/orders" element={<AdminOrdersPage />} />
+            <Route path="/admin/orders/:id" element={<AdminOrderDetailPage />} />
+            <Route path="/admin/delivery-jobs" element={<DeliveryJobsPage />} />
+            <Route path="/admin/discounts" element={<DiscountsPage />} />
+            <Route path="/admin/overdue-orders" element={<OverdueOrdersPage />} />
+            <Route path="/admin/system-time" element={<SystemTimePage />} />
           </Route>
 
           <Route element={<ProtectedRoute roles={['Seller']} />}>

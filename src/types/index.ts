@@ -391,6 +391,154 @@ export const DELIVERY_FEES: Record<DeliveryMethod, number> = {
   REGULAR: 8000,
 };
 
+// Admin types
+
+export interface AdminSummary {
+  totalUsers: number;
+  totalStores: number;
+  totalProducts: number;
+  totalOrders: number;
+  totalCompletedOrders?: number;
+  totalReturnedOrders?: number;
+  totalDeliveryJobs?: number;
+  totalRevenue?: string;
+  totalSellerIncome?: string;
+  totalDriverEarnings?: string;
+  currentSystemTime?: string;
+}
+
+export interface AdminUser {
+  id: number;
+  username: string;
+  email: string;
+  fullName: string;
+  phone?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  userRoles?: Array<{
+    id?: number;
+    role?: {
+      id?: number;
+      name?: string;
+    };
+  }>;
+}
+
+export interface AdminStore {
+  id: number;
+  name: string;
+  description?: string | null;
+  sellerUserId?: number;
+  sellerUser?: { fullName: string; username?: string } | null;
+  _count?: { products?: number };
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AdminVoucher {
+  id: number;
+  name: string;
+  code: string;
+  description?: string | null;
+  discountType: 'PERCENTAGE' | 'FIXED_AMOUNT';
+  discountValue: string;
+  maxDiscountAmount?: string | null;
+  minPurchaseAmount?: string | null;
+  remainingUsage?: number;
+  expiryDate: string;
+  isActive: boolean;
+  isExpired?: boolean;
+  isAvailable?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AdminPromo {
+  id: number;
+  name: string;
+  code: string;
+  description?: string | null;
+  discountType: 'PERCENTAGE' | 'FIXED_AMOUNT';
+  discountValue: string;
+  maxDiscountAmount?: string | null;
+  minPurchaseAmount?: string | null;
+  expiryDate: string;
+  isActive: boolean;
+  isExpired?: boolean;
+  isAvailable?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AdminDiscountsResponse {
+  vouchers: AdminVoucher[];
+  promos: AdminPromo[];
+}
+
+export interface CreateVoucherPayload {
+  name: string;
+  code: string;
+  description?: string;
+  discountType: 'PERCENTAGE' | 'FIXED_AMOUNT';
+  discountValue: number;
+  maxDiscountAmount?: number;
+  minPurchaseAmount?: number;
+  remainingUsage: number;
+  expiryDate: string;
+  isActive?: boolean;
+}
+
+export interface CreatePromoPayload {
+  name: string;
+  code: string;
+  description?: string;
+  discountType: 'PERCENTAGE' | 'FIXED_AMOUNT';
+  discountValue: number;
+  maxDiscountAmount?: number;
+  minPurchaseAmount?: number;
+  expiryDate: string;
+  isActive?: boolean;
+}
+
+export interface OverdueOrderSummary {
+  id: number;
+  orderNumber?: string;
+  buyerId?: number;
+  storeId?: number;
+  finalTotal?: string;
+  expiredAt?: string;
+  overdueDuration?: string;
+  status?: OrderStatus;
+  buyer?: { id: number; username: string; fullName: string } | null;
+  store?: { id: number; name: string } | null;
+}
+
+export interface SystemTimeResponse {
+  currentDatetime: string;
+}
+
+export interface SimulateNextDayResponse {
+  previousTime: string;
+  newTime: string;
+}
+
+export interface RefundOrderResult {
+  id?: number;
+  orderId?: number;
+  amount?: string;
+  message?: string;
+}
+
+export interface RefundAllResponse {
+  processedCount: number;
+  skippedCount: number;
+  processedOrderIds: number[];
+  skippedOrders?: Array<{
+    orderId: number;
+    reason: string;
+  }>;
+}
+
 // Seller order types
 
 export interface SellerOrderBuyer {
