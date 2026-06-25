@@ -96,7 +96,8 @@ export default function ProductDetailPage() {
   const userHasBuyerRole = roles.includes('Buyer');
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="bg-[#f9f9ff] min-h-[calc(100vh-4rem)]">
+      <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
         <Link to="/" className="hover:text-primary-600 transition-colors">Home</Link>
@@ -271,5 +272,8 @@ export default function ProductDetailPage() {
         </div>
       </div>
     </div>
+    </div>
   );
 }
+
+
