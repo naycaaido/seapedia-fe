@@ -276,21 +276,19 @@ export default function Navbar() {
                           </>
                         )}
 
-                        {roles.length > 1 && (
-                          <>
-                            <div className="border-t border-gray-100 my-1" />
-                            <Link
-                              to="/role-selection"
-                              onClick={closeProfile}
-                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                            >
-                              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                              </svg>
-                              Switch Role
-                            </Link>
-                          </>
-                        )}
+                        <>
+                          <div className="border-t border-gray-100 my-1" />
+                          <Link
+                            to="/role-selection"
+                            onClick={closeProfile}
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                            </svg>
+                            Roles
+                          </Link>
+                        </>
                       </div>
 
                       {/* Logout */}
@@ -399,18 +397,16 @@ export default function Navbar() {
                 Reviews
               </Link>
 
-              {roles.length > 1 && (
-                <Link
-                  to="/role-selection"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-1 py-2.5 text-sm text-gray-700 hover:text-primary-600 rounded-lg"
-                >
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                  </svg>
-                  Switch Role
-                </Link>
-              )}
+              <Link
+                to="/role-selection"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-1 py-2.5 text-sm text-gray-700 hover:text-primary-600 rounded-lg"
+              >
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+                Roles
+              </Link>
 
               <hr className="border-gray-100 my-1" />
               <button
