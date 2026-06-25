@@ -1,0 +1,10 @@
+node_modules/
+dist/
+graphify-out/
+
+package-lock.json
+tsconfig.tsbuildinfo
+
+*.md
+.env
+.env.*

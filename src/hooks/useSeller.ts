@@ -9,6 +9,7 @@ import type {
   CreateProductFormData,
   UpdateProductFormData,
   SellerOrder,
+  SellerIncomeReport,
 } from '../types';
 import { toFormData } from '../types';
 
@@ -116,6 +117,13 @@ export function useSellerOrder(id: number | undefined) {
     queryKey: ['seller-orders', id],
     queryFn: () => api.get<SellerOrder>(`/seller/orders/${id}`),
     enabled: !!id,
+  });
+}
+
+export function useSellerIncome() {
+  return useQuery({
+    queryKey: ['seller-income'],
+    queryFn: () => api.get<SellerIncomeReport>('/seller/reports/income'),
   });
 }
 

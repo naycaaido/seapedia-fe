@@ -84,6 +84,12 @@ export interface SellerDashboard {
   activeProducts: number;
 }
 
+export interface SellerIncomeReport {
+  totalIncome: string;
+  totalOrders: number;
+  averageIncomePerOrder: string;
+}
+
 export interface CreateStorePayload {
   name: string;
   description: string;
