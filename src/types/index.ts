@@ -523,9 +523,20 @@ export interface SystemTimeResponse {
   currentDatetime: string;
 }
 
+export interface SimulateRefundResult {
+  processedCount: number;
+  skippedCount: number;
+  processedOrderIds: number[];
+  skippedOrders?: Array<{
+    orderId: number;
+    reason: string;
+  }>;
+}
+
 export interface SimulateNextDayResponse {
   previousTime: string;
   newTime: string;
+  refundResult?: SimulateRefundResult;
 }
 
 export interface RefundOrderResult {

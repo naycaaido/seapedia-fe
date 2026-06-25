@@ -9,13 +9,18 @@ export default function SystemTimePage() {
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   async function handleSimulate() {
-    if (!window.confirm('Advance system time by 1 day? This may trigger overdue detection and other time-based processes.')) return;
+    if (!window.confirm('Advance system time by 1 day and automatically process overdue refunds?')) return;
     setFeedback(null);
     try {
       const res = await simulateNextDay.mutateAsync();
+      const processed = res.refundResult?.processedCount ?? 0;
+      const skipped = res.refundResult?.skippedCount ?? 0;
+      const refundMsg = processed > 0 || skipped > 0
+        ? ` ${processed} overdue order(s) refunded, ${skipped} skipped.`
+        : '';
       setFeedback({
         type: 'success',
-        message: `Time advanced: ${new Date(res.previousTime).toLocaleString()} → ${new Date(res.newTime).toLocaleString()}`,
+        message: `Time advanced: ${new Date(res.previousTime).toLocaleString()} → ${new Date(res.newTime).toLocaleString()}.${refundMsg}`,
       });
     } catch (e: any) {
       setFeedback({ type: 'error', message: e.message || 'Failed to simulate next day' });
@@ -57,8 +62,9 @@ export default function SystemTimePage() {
       <div className="mt-8">
         <Card header={<h2 className="font-semibold text-gray-900">Simulate Next Day</h2>}>
           <p className="text-sm text-gray-600 mb-4">
-            Advance the system time by 1 day. This may trigger overdue detection, discount expiry, and
-            other time-based business processes.
+            Advance the system time by 1 day. This also automatically processes refunds for all
+            overdue orders. You can still manually refund overdue orders from the Overdue Orders
+            page if needed.
           </p>
           <Button
             onClick={handleSimulate}
@@ -66,7 +72,7 @@ export default function SystemTimePage() {
             disabled={simulateNextDay.isPending}
             className="w-full"
           >
-            Simulate Next Day
+            Simulate Next Day &amp; Process Overdue Refunds
           </Button>
         </Card>
       </div>
