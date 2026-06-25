@@ -2,15 +2,12 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth';
 import Navbar from './Navbar';
 import BottomNav from './BottomNav';
-import Footer from '../ui/Footer';
 
 const EXCLUDED_BOTTOM_NAV_ROUTES = ['/', '/login', '/register', '/role-selection', '/buyer/checkout'];
 
 export default function AppLayout() {
   const location = useLocation()
   const { isAuthenticated } = useAuthStore();
-  const isLandingPage = location.pathname === '/'
-  const shouldShowFooter = isLandingPage
   const showBottomNav = isAuthenticated && !EXCLUDED_BOTTOM_NAV_ROUTES.includes(location.pathname)
 
   return (
@@ -20,7 +17,6 @@ export default function AppLayout() {
         <Outlet />
       </main>
       <BottomNav />
-      {shouldShowFooter && <Footer />}
     </div>
   );
 }
