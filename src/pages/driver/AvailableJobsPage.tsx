@@ -3,6 +3,8 @@ import { useDriverJobs, useTakeDriverJob } from '../../hooks/useDriver';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import ConfirmModal from '../../components/ui/ConfirmModal';
+import FeedbackBanner from '../../components/ui/FeedbackBanner';
 import { formatPrice } from '../../types';
 
 const DELIVERY_LABELS: Record<string, string> = {
@@ -25,15 +27,17 @@ export default function AvailableJobsPage() {
   const { data: jobs, isLoading, isError } = useDriverJobs();
   const takeJobMutation = useTakeDriverJob();
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [confirmJobId, setConfirmJobId] = useState<number | null>(null);
 
   const handleTakeJob = (jobId: number) => {
-    if (!window.confirm('Take this delivery job?')) return;
     setFeedback(null);
     takeJobMutation.mutate(jobId, {
       onSuccess: () => {
+        setConfirmJobId(null);
         setFeedback({ type: 'success', message: 'Job taken successfully.' });
       },
       onError: (err: any) => {
+        setConfirmJobId(null);
         setFeedback({ type: 'error', message: err.message || 'Failed to take job.' });
       },
     });
@@ -91,16 +95,12 @@ export default function AvailableJobsPage() {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Available Jobs</h1>
 
       {feedback && (
-        <div
-          role="alert"
-          className={`mb-4 px-4 py-3 rounded-lg text-sm ${
-            feedback.type === 'success'
-              ? 'bg-green-50 text-green-700 border border-green-200'
-              : 'bg-red-50 text-red-700 border border-red-200'
-          }`}
-        >
-          {feedback.message}
-        </div>
+        <FeedbackBanner
+          type={feedback.type}
+          message={feedback.message}
+          className="mb-4"
+          onDismiss={() => setFeedback(null)}
+        />
       )}
 
       <div className="space-y-4">
@@ -149,7 +149,7 @@ export default function AvailableJobsPage() {
             <div className="flex justify-end">
               <Button
                 size="sm"
-                onClick={() => handleTakeJob(job.id)}
+                  onClick={() => setConfirmJobId(job.id)}
                 loading={takeJobMutation.isPending && takeJobMutation.variables === job.id}
                 disabled={takeJobMutation.isPending}
               >
@@ -159,6 +159,17 @@ export default function AvailableJobsPage() {
           </Card>
         ))}
       </div>
+
+      <ConfirmModal
+        isOpen={confirmJobId !== null}
+        title="Take Delivery Job?"
+        message="You will be assigned to this delivery job."
+        confirmLabel="Take Job"
+        confirmVariant="primary"
+        loading={takeJobMutation.isPending}
+        onClose={() => setConfirmJobId(null)}
+        onConfirm={() => { if (confirmJobId !== null) handleTakeJob(confirmJobId); }}
+      />
     </div>
   );
 }

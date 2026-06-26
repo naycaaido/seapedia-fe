@@ -126,7 +126,25 @@ export function useUpdateCartItem() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: UpdateCartItemPayload }) =>
       api.patch<Cart>(`/cart/items/${id}`, payload),
-    onSuccess: () => {
+    onMutate: async ({ id, payload }) => {
+      await queryClient.cancelQueries({ queryKey: ['cart'] });
+      const previousCart = queryClient.getQueryData<Cart>(['cart']);
+      if (previousCart) {
+        queryClient.setQueryData<Cart>(['cart'], {
+          ...previousCart,
+          items: previousCart.items.map((item) =>
+            item.id === id ? { ...item, quantity: payload.quantity } : item
+          ),
+        });
+      }
+      return { previousCart };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousCart) {
+        queryClient.setQueryData(['cart'], context.previousCart);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
   });

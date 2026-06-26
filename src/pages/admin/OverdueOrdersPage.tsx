@@ -3,6 +3,8 @@ import { useOverdueOrders, useRefundOrder, useRefundAllOverdueOrders } from '../
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import ConfirmModal from '../../components/ui/ConfirmModal';
+import FeedbackBanner from '../../components/ui/FeedbackBanner';
 import { formatPrice } from '../../types';
 
 export default function OverdueOrdersPage() {
@@ -11,29 +13,32 @@ export default function OverdueOrdersPage() {
   const refundAll = useRefundAllOverdueOrders();
 
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ type: 'single'; id: number } | { type: 'all' } | null>(null);
 
   function showFeedback(type: 'success' | 'error', message: string) {
     setFeedback({ type, message });
   }
 
   async function handleRefund(id: number) {
-    if (!window.confirm(`Refund order #${id}? This action cannot be undone.`)) return;
     setFeedback(null);
     try {
       await refundOrder.mutateAsync(id);
+      setConfirmAction(null);
       showFeedback('success', `Order #${id} refunded successfully.`);
     } catch (e: any) {
+      setConfirmAction(null);
       showFeedback('error', e.message || `Failed to refund order #${id}`);
     }
   }
 
   async function handleRefundAll() {
-    if (!window.confirm('Refund ALL overdue orders? This action cannot be undone.')) return;
     setFeedback(null);
     try {
       const res = await refundAll.mutateAsync();
+      setConfirmAction(null);
       showFeedback('success', `Processed ${res.processedCount} refund(s), skipped ${res.skippedCount}.`);
     } catch (e: any) {
+      setConfirmAction(null);
       showFeedback('error', e.message || 'Failed to refund all overdue orders');
     }
   }
@@ -44,7 +49,7 @@ export default function OverdueOrdersPage() {
         <h1 className="text-2xl font-bold text-gray-900">Overdue Orders</h1>
         <Button
           variant="danger"
-          onClick={handleRefundAll}
+          onClick={() => setConfirmAction({ type: 'all' })}
           loading={refundAll.isPending}
           disabled={refundAll.isPending || refundOrder.isPending || (!isLoading && orders && orders.length === 0)}
         >
@@ -53,12 +58,12 @@ export default function OverdueOrdersPage() {
       </div>
 
       {feedback && (
-        <div
-          role="alert"
-          className={`p-4 rounded-lg mb-6 ${feedback.type === 'success' ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}
-        >
-          {feedback.message}
-        </div>
+        <FeedbackBanner
+          type={feedback.type}
+          message={feedback.message}
+          className="mb-6"
+          onDismiss={() => setFeedback(null)}
+        />
       )}
 
       {isLoading && (
@@ -104,7 +109,7 @@ export default function OverdueOrdersPage() {
                   <Button
                     variant="danger"
                     size="sm"
-                    onClick={() => handleRefund(order.id)}
+                    onClick={() => setConfirmAction({ type: 'single', id: order.id })}
                     loading={refundOrder.isPending && refundOrder.variables === order.id}
                     disabled={refundOrder.isPending || refundAll.isPending}
                   >
@@ -116,6 +121,24 @@ export default function OverdueOrdersPage() {
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmAction !== null}
+        title={confirmAction?.type === 'all' ? 'Refund All Overdue Orders?' : 'Refund Order?'}
+        message={
+          confirmAction?.type === 'all'
+            ? 'This will refund all overdue orders. This action cannot be undone.'
+            : `Refund order #${confirmAction?.type === 'single' ? confirmAction.id : ''}? This action cannot be undone.`
+        }
+        confirmLabel={confirmAction?.type === 'all' ? 'Refund All' : 'Refund Order'}
+        confirmVariant="danger"
+        loading={refundOrder.isPending || refundAll.isPending}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={() => {
+          if (confirmAction?.type === 'single') handleRefund(confirmAction.id);
+          else if (confirmAction?.type === 'all') handleRefundAll();
+        }}
+      />
     </div>
   );
 }

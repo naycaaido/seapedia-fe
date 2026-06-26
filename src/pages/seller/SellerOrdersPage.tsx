@@ -4,6 +4,8 @@ import { useSellerOrders, useProcessSellerOrder } from '../../hooks/useSeller';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import ConfirmModal from '../../components/ui/ConfirmModal';
+import FeedbackBanner from '../../components/ui/FeedbackBanner';
 import { formatPrice } from '../../types';
 
 const STATUS_LABELS: Record<string, string> = {
@@ -36,15 +38,17 @@ export default function SellerOrdersPage() {
   const { data: orders, isLoading, isError } = useSellerOrders();
   const processMutation = useProcessSellerOrder();
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [confirmOrderId, setConfirmOrderId] = useState<number | null>(null);
 
   const handleProcess = (orderId: number) => {
-    if (!window.confirm('Process this order and move it to delivery?')) return;
     setFeedback(null);
     processMutation.mutate(orderId, {
       onSuccess: () => {
+        setConfirmOrderId(null);
         setFeedback({ type: 'success', message: 'Order processed successfully.' });
       },
       onError: (err: any) => {
+        setConfirmOrderId(null);
         setFeedback({ type: 'error', message: err.message || 'Failed to process order.' });
       },
     });
@@ -102,16 +106,12 @@ export default function SellerOrdersPage() {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Incoming Orders</h1>
 
       {feedback && (
-        <div
-          role="alert"
-          className={`mb-4 px-4 py-3 rounded-lg text-sm ${
-            feedback.type === 'success'
-              ? 'bg-green-50 text-green-700 border border-green-200'
-              : 'bg-red-50 text-red-700 border border-red-200'
-          }`}
-        >
-          {feedback.message}
-        </div>
+        <FeedbackBanner
+          type={feedback.type}
+          message={feedback.message}
+          className="mb-4"
+          onDismiss={() => setFeedback(null)}
+        />
       )}
 
       <div className="space-y-4">
@@ -148,7 +148,7 @@ export default function SellerOrdersPage() {
                 {order.status === 'SEDANG_DIKEMAS' && (
                   <Button
                     size="sm"
-                    onClick={() => handleProcess(order.id)}
+                    onClick={() => setConfirmOrderId(order.id)}
                     loading={processMutation.isPending && processMutation.variables === order.id}
                     disabled={processMutation.isPending}
                   >
@@ -160,6 +160,17 @@ export default function SellerOrdersPage() {
           </Card>
         ))}
       </div>
+
+      <ConfirmModal
+        isOpen={confirmOrderId !== null}
+        title="Process Order?"
+        message="This will move the order to delivery."
+        confirmLabel="Process Order"
+        confirmVariant="primary"
+        loading={processMutation.isPending}
+        onClose={() => setConfirmOrderId(null)}
+        onConfirm={() => { if (confirmOrderId !== null) handleProcess(confirmOrderId); }}
+      />
     </div>
   );
 }

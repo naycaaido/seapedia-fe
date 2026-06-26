@@ -5,6 +5,8 @@ import { useDriverHistory, useCompleteDriverJob } from '../../hooks/useDriver';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import ConfirmModal from '../../components/ui/ConfirmModal';
+import FeedbackBanner from '../../components/ui/FeedbackBanner';
 import { formatPrice } from '../../types';
 
 const DELIVERY_LABELS: Record<string, string> = {
@@ -28,19 +30,21 @@ export default function ActiveJobPage() {
   const completeMutation = useCompleteDriverJob();
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [completedJobId, setCompletedJobId] = useState<number | null>(null);
+  const [confirmJobId, setConfirmJobId] = useState<number | null>(null);
 
   const activeJobs = (history ?? []).filter((j) => j.status === 'TAKEN');
   const activeJob = activeJobs.length > 0 ? activeJobs[0] : null;
 
   const handleComplete = (jobId: number) => {
-    if (!window.confirm('Complete this delivery job?')) return;
     setFeedback(null);
     completeMutation.mutate(jobId, {
       onSuccess: () => {
+        setConfirmJobId(null);
         setCompletedJobId(jobId);
         setFeedback({ type: 'success', message: 'Job completed successfully.' });
       },
       onError: (err: any) => {
+        setConfirmJobId(null);
         setFeedback({ type: 'error', message: err.message || 'Failed to complete job.' });
       },
     });
@@ -76,16 +80,12 @@ export default function ActiveJobPage() {
         <div className="max-w-4xl mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-6">Active Job</h1>
           {feedback && (
-            <div
-              role="alert"
-              className={`mb-4 px-4 py-3 rounded-lg text-sm ${
-                feedback.type === 'success'
-                  ? 'bg-green-50 text-green-700 border border-green-200'
-                  : 'bg-red-50 text-red-700 border border-red-200'
-              }`}
-            >
-              {feedback.message}
-            </div>
+            <FeedbackBanner
+              type={feedback.type}
+              message={feedback.message}
+              className="mb-4"
+              onDismiss={() => setFeedback(null)}
+            />
           )}
           <Card>
             <div className="text-center py-12">
@@ -126,16 +126,12 @@ export default function ActiveJobPage() {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Active Job</h1>
 
       {feedback && (
-        <div
-          role="alert"
-          className={`mb-4 px-4 py-3 rounded-lg text-sm ${
-            feedback.type === 'success'
-              ? 'bg-green-50 text-green-700 border border-green-200'
-              : 'bg-red-50 text-red-700 border border-red-200'
-          }`}
-        >
-          {feedback.message}
-        </div>
+        <FeedbackBanner
+          type={feedback.type}
+          message={feedback.message}
+          className="mb-4"
+          onDismiss={() => setFeedback(null)}
+        />
       )}
 
       <Card>
@@ -188,7 +184,7 @@ export default function ActiveJobPage() {
           </div>
           {!completedJobId && (
             <Button
-              onClick={() => handleComplete(job.id)}
+              onClick={() => setConfirmJobId(job.id)}
               loading={completeMutation.isPending && completeMutation.variables === job.id}
               disabled={completeMutation.isPending}
             >
@@ -197,6 +193,17 @@ export default function ActiveJobPage() {
           )}
         </div>
       </Card>
+
+      <ConfirmModal
+        isOpen={confirmJobId !== null}
+        title="Complete Delivery Job?"
+        message="This will mark the delivery as completed."
+        confirmLabel="Complete Job"
+        confirmVariant="primary"
+        loading={completeMutation.isPending}
+        onClose={() => setConfirmJobId(null)}
+        onConfirm={() => { if (confirmJobId !== null) handleComplete(confirmJobId); }}
+      />
     </div>
   );
 }

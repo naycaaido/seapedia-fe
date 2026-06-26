@@ -1,18 +1,20 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSellerProducts, useDeleteProduct } from '../../hooks/useSeller';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 import { formatPrice } from '../../types';
 
 export default function MyProductsPage() {
   const { data: products, isLoading } = useSellerProducts();
   const deleteProduct = useDeleteProduct();
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Are you sure you want to deactivate this product? It will no longer appear in the public catalog.')) {
-      await deleteProduct.mutateAsync(id);
-    }
+    await deleteProduct.mutateAsync(id);
+    setDeletingId(null);
   };
 
   if (isLoading) {
@@ -24,7 +26,7 @@ export default function MyProductsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <><div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">My Products</h1>
@@ -84,8 +86,8 @@ export default function MyProductsPage() {
                     <Button
                       variant="danger"
                       size="sm"
-                      onClick={() => handleDelete(product.id)}
-                      loading={deleteProduct.isPending}
+                      onClick={() => setDeletingId(product.id)}
+                      loading={deleteProduct.isPending && deleteProduct.variables === product.id}
                     >
                       Deactivate
                     </Button>
@@ -106,5 +108,17 @@ export default function MyProductsPage() {
         </Card>
       )}
     </div>
+
+      <ConfirmModal
+      isOpen={deletingId !== null}
+      title="Deactivate Product?"
+      message="This product will no longer appear in the public catalog."
+      confirmLabel="Deactivate"
+      confirmVariant="danger"
+      loading={deleteProduct.isPending}
+      onClose={() => setDeletingId(null)}
+      onConfirm={() => { if (deletingId !== null) handleDelete(deletingId); }}
+    />
+    </>
   );
 }

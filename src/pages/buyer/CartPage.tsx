@@ -143,7 +143,7 @@ export default function CartPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                      disabled={item.quantity <= 1 || updateItemMutation.isPending}
+                      disabled={item.quantity <= 1 || (updateItemMutation.isPending && updateItemMutation.variables?.id === item.id)}
                       className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       −
@@ -151,7 +151,7 @@ export default function CartPage() {
                     <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
                     <button
                       onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                      disabled={item.quantity >= item.product.stock || updateItemMutation.isPending}
+                      disabled={item.quantity >= item.product.stock || (updateItemMutation.isPending && updateItemMutation.variables?.id === item.id)}
                       className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       +
