@@ -270,7 +270,7 @@ export default function CheckoutPage() {
                           {method === 'INSTANT' ? 'Instant Delivery' : method === 'NEXT_DAY' ? 'Next Day Delivery' : 'Regular Delivery'}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {method === 'INSTANT' ? '1-3 hours' : method === 'NEXT_DAY' ? '1 day' : '3-5 days'}
+                          {method === 'INSTANT' ? 'Fastest delivery • 6-hour SLA' : method === 'NEXT_DAY' ? 'Arrives next day • 24-hour SLA' : 'Standard delivery • 72-hour SLA'}
                         </p>
                       </div>
                     </div>

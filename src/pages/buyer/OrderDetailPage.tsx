@@ -4,6 +4,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import { formatPrice } from '../../types';
+import { getDeliverySlaLabel } from '../../utils/delivery';
 
 const STATUS_LABELS: Record<string, string> = {
   SEDANG_DIKEMAS: 'Being Packed',
@@ -29,6 +30,32 @@ function formatDate(dateStr: string): string {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+function getDeliveryDeadlineDisplay(order: { status: string; expiredAt: string | null | undefined }): { text: string; className: string } {
+  if (order.status === 'PESANAN_SELESAI') {
+    return { text: 'Completed', className: 'font-medium text-green-600' };
+  }
+
+  if (order.status === 'DIKEMBALIKAN') {
+    return { text: 'Returned / Refunded', className: 'font-medium text-gray-600' };
+  }
+
+  if (!order.expiredAt) {
+    return { text: '-', className: 'font-medium text-gray-900' };
+  }
+
+  const expiredAt = new Date(order.expiredAt);
+
+  if (Number.isNaN(expiredAt.getTime())) {
+    return { text: '-', className: 'font-medium text-gray-900' };
+  }
+
+  if (Date.now() > expiredAt.getTime()) {
+    return { text: `Overdue • ${formatDate(order.expiredAt)}`, className: 'font-medium text-red-600' };
+  }
+
+  return { text: formatDate(order.expiredAt), className: 'font-medium text-gray-900' };
 }
 
 export default function OrderDetailPage() {
@@ -62,6 +89,8 @@ export default function OrderDetailPage() {
       </div>
     );
   }
+
+  const deliveryDeadline = getDeliveryDeadlineDisplay(order);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -113,9 +142,11 @@ export default function OrderDetailPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Delivery</span>
-                <span className="font-medium">
-                  {order.deliveryMethod === 'INSTANT' ? 'Instant' : order.deliveryMethod === 'NEXT_DAY' ? 'Next Day' : 'Regular'}
-                </span>
+                <span className="font-medium text-right max-w-[250px]">{getDeliverySlaLabel(order.deliveryMethod)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Delivery Deadline</span>
+                <span className={`text-right max-w-[250px] ${deliveryDeadline.className}`}>{deliveryDeadline.text}</span>
               </div>
             </div>
           </Card>

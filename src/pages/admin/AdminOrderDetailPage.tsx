@@ -3,6 +3,7 @@ import { useAdminOrder } from '../../hooks/useAdmin';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import { formatPrice } from '../../types';
+import { getDeliverySlaLabel } from '../../utils/delivery';
 
 const statusVariant: Record<string, 'blue' | 'green' | 'yellow' | 'red' | 'gray' | 'purple'> = {
   SEDANG_DIKEMAS: 'yellow',
@@ -19,6 +20,42 @@ const statusLabel: Record<string, string> = {
   PESANAN_SELESAI: 'Completed',
   DIKEMBALIKAN: 'Refunded',
 };
+
+function formatDateTime(dateStr: string): string {
+  return new Date(dateStr).toLocaleString('id-ID', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function getDeliveryDeadlineDisplay(order: { status: string; expiredAt: string | null | undefined }): { text: string; className: string } {
+  if (order.status === 'PESANAN_SELESAI') {
+    return { text: 'Completed', className: 'text-green-600' };
+  }
+
+  if (order.status === 'DIKEMBALIKAN') {
+    return { text: 'Returned / Refunded', className: 'text-gray-600' };
+  }
+
+  if (!order.expiredAt) {
+    return { text: '—', className: 'text-gray-900' };
+  }
+
+  const expiredAt = new Date(order.expiredAt);
+
+  if (Number.isNaN(expiredAt.getTime())) {
+    return { text: '—', className: 'text-gray-900' };
+  }
+
+  if (Date.now() > expiredAt.getTime()) {
+    return { text: `Overdue • ${formatDateTime(order.expiredAt)}`, className: 'text-red-600' };
+  }
+
+  return { text: formatDateTime(order.expiredAt), className: 'text-gray-900' };
+}
 
 export default function AdminOrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -59,6 +96,8 @@ export default function AdminOrderDetailPage() {
     );
   }
 
+  const deliveryDeadline = getDeliveryDeadlineDisplay(order);
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <Link to="/admin/orders" className="text-blue-600 hover:underline mb-4 inline-block">&larr; Back to Orders</Link>
@@ -83,15 +122,15 @@ export default function AdminOrderDetailPage() {
             </div>
             <div>
               <span className="text-gray-500">Delivery Method:</span>
-              <p className="text-gray-900 font-medium">{order.deliveryMethod}</p>
+              <p className="text-gray-900 font-medium">{getDeliverySlaLabel(order.deliveryMethod)}</p>
             </div>
             <div>
               <span className="text-gray-500">Paid At:</span>
-              <p className="text-gray-900 font-medium">{order.paidAt ? new Date(order.paidAt).toLocaleString() : '—'}</p>
+              <p className="text-gray-900 font-medium">{order.paidAt ? formatDateTime(order.paidAt) : '—'}</p>
             </div>
             <div>
-              <span className="text-gray-500">Expired At:</span>
-              <p className="text-gray-900 font-medium">{order.expiredAt ? new Date(order.expiredAt).toLocaleString() : '—'}</p>
+              <span className="text-gray-500">Delivery Deadline:</span>
+              <p className={`font-medium ${deliveryDeadline.className}`}>{deliveryDeadline.text}</p>
             </div>
           </div>
         </Card>
@@ -161,7 +200,7 @@ export default function AdminOrderDetailPage() {
                   <Badge variant={statusVariant[h.status] || 'gray'}>
                     {statusLabel[h.status] || h.status}
                   </Badge>
-                  <span className="text-gray-500">{new Date(h.createdAt).toLocaleString()}</span>
+                  <span className="text-gray-500">{formatDateTime(h.createdAt)}</span>
                 </div>
               ))}
             </div>
