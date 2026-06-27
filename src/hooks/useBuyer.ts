@@ -3,6 +3,7 @@ import { api } from '../api/client';
 import type {
   Wallet,
   WalletTransaction,
+  BuyerSpendingReport,
   Address,
   CreateAddressPayload,
   UpdateAddressPayload,
@@ -202,6 +203,13 @@ export function useOrder(id: number | undefined) {
     queryKey: ['orders', id],
     queryFn: () => api.get<Order>(`/orders/${id}`),
     enabled: !!id,
+  });
+}
+
+export function useBuyerSpending() {
+  return useQuery({
+    queryKey: ['buyer-spending'],
+    queryFn: () => api.get<BuyerSpendingReport>('/buyer/reports/spending'),
   });
 }
 

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts } from '../hooks/useProducts';
+import { useDebounce } from '../hooks/useDebounce';
 import { formatPrice } from '../types';
 import Button from '../components/ui/Button';
 
@@ -17,8 +18,9 @@ function getStockBadge(stock: number): { label: string; className: string } {
 }
 
 export default function ProductListPage() {
-  const { data: products, isLoading, isError } = useProducts();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 500);
+  const { data: products, isLoading, isError } = useProducts(debouncedSearch);
   const [sortBy, setSortBy] = useState<string>('featured');
   const [priceMin, setPriceMin] = useState('');
   const [priceMax, setPriceMax] = useState('');
@@ -29,17 +31,13 @@ export default function ProductListPage() {
     if (!products) return [];
 
     let result = products.filter((p) => {
-      const matchesSearch =
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.store.name.toLowerCase().includes(search.toLowerCase());
-
       const matchesPriceRange =
         (!priceMin || Number(p.price) >= Number(priceMin)) &&
         (!priceMax || Number(p.price) <= Number(priceMax));
 
       const matchesStock = !inStockOnly || p.stock > 0;
 
-      return matchesSearch && matchesPriceRange && matchesStock;
+      return matchesPriceRange && matchesStock;
     });
 
     switch (sortBy) {
@@ -60,7 +58,7 @@ export default function ProductListPage() {
     }
 
     return result;
-  }, [products, search, sortBy, priceMin, priceMax, inStockOnly]);
+  }, [products, sortBy, priceMin, priceMax, inStockOnly]);
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
   const paginatedProducts = filteredProducts.slice(
@@ -369,7 +367,20 @@ export default function ProductListPage() {
                 {/* Pagination */}
                 {renderPagination()}
               </>
-            ) : search || priceMin || priceMax || inStockOnly ? (
+            ) : search ? (
+              <div className="text-center py-20">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-2xl mb-4">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <p className="text-lg text-gray-600 mb-1">No products found for &ldquo;{search}&rdquo;</p>
+                <p className="text-sm text-gray-500 mb-4">Try a different keyword or browse all products.</p>
+                <Button variant="outline" size="sm" onClick={() => setSearch('')}>
+                  Clear search
+                </Button>
+              </div>
+            ) : priceMin || priceMax || inStockOnly ? (
               <div className="text-center py-20">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-2xl mb-4">
                   <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

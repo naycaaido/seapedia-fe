@@ -1,11 +1,17 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { api } from '../api/client';
 import type { Product } from '../types';
 
-export function useProducts() {
+export function useProducts(search?: string) {
   return useQuery({
-    queryKey: ['products'],
-    queryFn: () => api.get<Product[]>('/products'),
+    queryKey: search ? ['products', { search }] : ['products'],
+    queryFn: () => {
+      const endpoint = search
+        ? `/products?search=${encodeURIComponent(search)}`
+        : '/products';
+      return api.get<Product[]>(endpoint);
+    },
+    placeholderData: keepPreviousData,
   });
 }
 

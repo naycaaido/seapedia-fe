@@ -90,6 +90,12 @@ export interface SellerIncomeReport {
   averageIncomePerOrder: string;
 }
 
+export interface BuyerSpendingReport {
+  totalSpending: string;
+  totalOrders: number;
+  averageOrderValue: string;
+}
+
 export interface CreateStorePayload {
   name: string;
   description: string;

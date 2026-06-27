@@ -32,6 +32,7 @@ import CartPage from './pages/buyer/CartPage';
 import CheckoutPage from './pages/buyer/CheckoutPage';
 import OrdersPage from './pages/buyer/OrdersPage';
 import OrderDetailPage from './pages/buyer/OrderDetailPage';
+import BuyerSpendingReportPage from './pages/buyer/BuyerSpendingReportPage';
 import UsersPage from './pages/admin/UsersPage';
 import StoresPage from './pages/admin/StoresPage';
 import ProductsPage from './pages/admin/ProductsPage';
@@ -41,6 +42,7 @@ import DeliveryJobsPage from './pages/admin/DeliveryJobsPage';
 import DiscountsPage from './pages/admin/DiscountsPage';
 import OverdueOrdersPage from './pages/admin/OverdueOrdersPage';
 import SystemTimePage from './pages/admin/SystemTimePage';
+import SellerIncomeReportPage from './pages/seller/SellerIncomeReportPage';
 
 export default function App() {
   const { isAuthenticated, fetchProfile } = useAuthStore();
@@ -87,6 +89,7 @@ export default function App() {
             <Route path="/seller/products/:id/edit" element={<EditProductPage />} />
             <Route path="/seller/orders" element={<SellerOrdersPage />} />
             <Route path="/seller/orders/:id" element={<SellerOrderDetailPage />} />
+            <Route path="/seller/reports/income" element={<SellerIncomeReportPage />} />
           </Route>
 
           <Route element={<ProtectedRoute roles={['Buyer']} />}>
@@ -97,6 +100,7 @@ export default function App() {
             <Route path="/buyer/checkout" element={<CheckoutPage />} />
             <Route path="/buyer/orders" element={<OrdersPage />} />
             <Route path="/buyer/orders/:id" element={<OrderDetailPage />} />
+            <Route path="/buyer/reports/spending" element={<BuyerSpendingReportPage />} />
           </Route>
 
           <Route element={<ProtectedRoute roles={['Driver']} />}>

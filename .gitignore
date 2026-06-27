@@ -10,9 +10,11 @@ lerna-debug.log*
 graphify-out/
 DESIGN_REFERENCE_META.md
 DESIGN.md
+CLAUDE.md
 
 # OS
 .DS_Store
+.claude
 
 PRD_FRONTEND.md
 PROGRESS.md

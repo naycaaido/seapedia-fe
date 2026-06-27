@@ -1,4 +1,9 @@
-const API_BASE = '/api';
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '');
+
+function buildUrl(path: string) {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return `${API_BASE}${normalizedPath}`;
+}
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown;
@@ -31,7 +36,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
+  const response = await fetch(buildUrl(endpoint), {
     ...options,
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
@@ -58,7 +63,7 @@ async function uploadRequest<T>(endpoint: string, formData: FormData, method: st
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
+  const response = await fetch(buildUrl(endpoint), {
     method,
     headers,
     body: formData,
