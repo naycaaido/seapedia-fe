@@ -231,40 +231,42 @@ export default function LandingPage() {
           </h2>
         </div>
 
-        <div className="relative">
-          <svg
-            className="hidden md:block absolute top-[42px] left-0 w-full h-6 -z-0 pointer-events-none"
-            viewBox="0 0 1200 24"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <line
-              x1="120"
-              y1="12"
-              x2="1080"
-              y2="12"
-              stroke="#93c5fd"
-              strokeWidth="2"
-              strokeDasharray="6 6"
-            />
-          </svg>
+        <div className="grid md:grid-cols-3 gap-6 md:gap-5 items-stretch">
+          {steps.map((step, idx) => {
+            const isLast = idx === steps.length - 1;
+            return (
+              <div key={step.number} className="flex items-center md:items-stretch">
+                <div className="group relative flex-1 rounded-2xl border border-gray-200 bg-white p-6 pt-8 transition-all duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-lg hover:shadow-gray-200/60">
+                  {/* Number badge, overlapping the top edge */}
+                  <span className="absolute -top-4 left-6 flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-sm font-bold text-white ring-4 ring-white">
+                    {idx + 1}
+                  </span>
 
-          <div className="grid md:grid-cols-3 gap-8 md:gap-6 relative">
-            {steps.map((step) => (
-              <div key={step.number}>
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="relative z-10 w-[84px] h-[84px] rounded-2xl bg-primary-50 border border-primary-100 flex items-center justify-center text-3xl">
+                  <div className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-50 text-3xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                     {step.emoji}
                   </div>
-                  <span className="text-5xl font-bold text-primary-100 select-none">
-                    {step.number}
-                  </span>
+
+                  <h3 className="font-semibold text-lg text-gray-900 mb-2">{step.title}</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">{step.description}</p>
                 </div>
-                <h3 className="font-semibold text-lg text-gray-900 mb-2">{step.title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{step.description}</p>
+
+                {/* Connector arrow between cards, desktop only */}
+                {!isLast && (
+                  <div className="hidden md:flex items-center justify-center w-5 shrink-0">
+                    <svg
+                      className="w-5 h-5 text-primary-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </section>
 

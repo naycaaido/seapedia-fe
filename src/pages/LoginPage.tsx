@@ -57,7 +57,7 @@ export default function LoginPage() {
       if (!activeRole && roles.length > 1) {
         navigate('/role-selection');
       } else {
-        navigate('/');
+        navigate('/products');
       }
     } catch {
       // error is set in store
