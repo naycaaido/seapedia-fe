@@ -1,20 +1,43 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCreateProduct } from '../../hooks/useSeller';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import { validateImageFile } from '../../types';
 
 export default function CreateProductPage() {
   const navigate = useNavigate();
   const createProduct = useCreateProduct();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [stock, setStock] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const error = validateImageFile(file);
+      if (error) {
+        setFormErrors((prev) => ({ ...prev, image: error }));
+        e.target.value = '';
+        return;
+      }
+      setFormErrors((prev) => {
+        const { image, ...rest } = prev;
+        return rest;
+      });
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +47,7 @@ export default function CreateProductPage() {
     if (!description.trim()) errors.description = 'Description is required';
     if (!price || Number(price) < 0) errors.price = 'Price must be 0 or greater';
     if (!stock || Number(stock) < 0) errors.stock = 'Stock must be 0 or greater';
+    if (!imageFile) errors.image = 'Product image is required';
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
@@ -35,9 +59,9 @@ export default function CreateProductPage() {
       await createProduct.mutateAsync({
         name: name.trim(),
         description: description.trim(),
-        price: Number(price),
-        stock: Number(stock),
-        imageUrl: imageUrl.trim() || undefined,
+        price: String(Number(price)),
+        stock: String(Number(stock)),
+        image: imageFile!,
       });
       navigate('/seller/products');
     } catch {
@@ -93,12 +117,29 @@ export default function CreateProductPage() {
               placeholder="e.g. 25"
             />
           </div>
-          <Input
-            label="Image URL (optional)"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="https://example.com/image.jpg"
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full px-3 py-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-500 transition-colors text-center"
+            >
+              {imagePreview ? (
+                <img src={imagePreview} alt="Preview" className="mx-auto h-32 object-contain" />
+              ) : (
+                <span className="text-gray-500">Click to select an image (JPEG, PNG, WebP, max 5MB)</span>
+              )}
+            </div>
+            {formErrors.image && (
+              <p className="text-sm text-red-600 mt-1">{formErrors.image}</p>
+            )}
+          </div>
           <div className="flex gap-3">
             <Button type="submit" loading={createProduct.isPending}>
               Create Product

@@ -3,12 +3,15 @@ import { api } from '../api/client';
 import type {
   SellerDashboard,
   Store,
-  Product,
+  SellerProduct,
   CreateStorePayload,
   UpdateStorePayload,
-  CreateProductPayload,
-  UpdateProductPayload,
+  CreateProductFormData,
+  UpdateProductFormData,
+  SellerOrder,
+  SellerIncomeReport,
 } from '../types';
+import { toFormData } from '../types';
 
 export function useSellerDashboard() {
   return useQuery({
@@ -52,14 +55,14 @@ export function useUpdateStore() {
 export function useSellerProducts() {
   return useQuery({
     queryKey: ['seller-products'],
-    queryFn: () => api.get<Product[]>('/seller/products'),
+    queryFn: () => api.get<SellerProduct[]>('/seller/products'),
   });
 }
 
 export function useSellerProduct(id: number) {
   return useQuery({
     queryKey: ['seller-products', id],
-    queryFn: () => api.get<Product>(`/seller/products/${id}`),
+    queryFn: () => api.get<SellerProduct>(`/seller/products/${id}`),
     enabled: !!id,
   });
 }
@@ -67,8 +70,8 @@ export function useSellerProduct(id: number) {
 export function useCreateProduct() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: CreateProductPayload) =>
-      api.post<Product>('/seller/products', payload),
+    mutationFn: (payload: CreateProductFormData) =>
+      api.upload<SellerProduct>('/seller/products', toFormData(payload)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seller-products'] });
       queryClient.invalidateQueries({ queryKey: ['seller-dashboard'] });
@@ -79,8 +82,8 @@ export function useCreateProduct() {
 export function useUpdateProduct() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: UpdateProductPayload }) =>
-      api.patch<Product>(`/seller/products/${id}`, payload),
+    mutationFn: ({ id, payload }: { id: number; payload: UpdateProductFormData }) =>
+      api.uploadPatch<SellerProduct>(`/seller/products/${id}`, toFormData(payload)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seller-products'] });
       queryClient.invalidateQueries({ queryKey: ['seller-dashboard'] });
@@ -92,9 +95,46 @@ export function useDeleteProduct() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) =>
-      api.patch<Product>(`/seller/products/${id}`, { isActive: false }),
+      api.delete<SellerProduct>(`/seller/products/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seller-products'] });
+      queryClient.invalidateQueries({ queryKey: ['seller-dashboard'] });
+    },
+  });
+}
+
+// Seller order hooks
+
+export function useSellerOrders() {
+  return useQuery({
+    queryKey: ['seller-orders'],
+    queryFn: () => api.get<SellerOrder[]>('/seller/orders'),
+  });
+}
+
+export function useSellerOrder(id: number | undefined) {
+  return useQuery({
+    queryKey: ['seller-orders', id],
+    queryFn: () => api.get<SellerOrder>(`/seller/orders/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useSellerIncome() {
+  return useQuery({
+    queryKey: ['seller-income'],
+    queryFn: () => api.get<SellerIncomeReport>('/seller/reports/income'),
+  });
+}
+
+export function useProcessSellerOrder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) =>
+      api.post<SellerOrder>(`/seller/orders/${id}/process`),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ['seller-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['seller-orders', id] });
       queryClient.invalidateQueries({ queryKey: ['seller-dashboard'] });
     },
   });

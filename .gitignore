@@ -4,7 +4,17 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 lerna-debug.log*
+.opencode/
+graphify-out/
+DESIGN_REFERENCE_META.md
+DESIGN.md
+CLAUDE.md
+
+# OS
+.DS_Store
+.claude
 
 PRD_FRONTEND.md
 PROGRESS.md
@@ -75,8 +85,15 @@ web_modules/
 
 # dotenv environment variable files
 .env
+.env.local
 .env.*
 !.env.example
+
+# Build output
+dist
+
+# Dependency directories
+node_modules/
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache

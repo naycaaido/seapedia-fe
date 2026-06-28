@@ -1,8 +1,30 @@
 import { useAuthStore } from '../store/auth';
-import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
+
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+const ROLE_COLORS: Record<string, string> = {
+  Admin: 'border-red-200 bg-red-50',
+  Seller: 'border-blue-200 bg-blue-50',
+  Buyer: 'border-emerald-200 bg-emerald-50',
+  Driver: 'border-amber-200 bg-amber-50',
+};
+
+const ROLE_ICONS: Record<string, string> = {
+  Admin: '#dc2626',
+  Seller: '#2563eb',
+  Buyer: '#059669',
+  Driver: '#d97706',
+};
 
 export default function ProfilePage() {
   const { user, roles, activeRole, selectRole } = useAuthStore();
@@ -35,65 +57,130 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
+  const userName = user.fullName || user.username;
+  const initials = getInitials(userName);
+
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <Card header={<h1 className="text-xl font-bold text-gray-900">Profile</h1>}>
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-500">Username</p>
-              <p className="font-medium">{user.username}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Email</p>
-              <p className="font-medium">{user.email}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Full Name</p>
-              <p className="font-medium">{user.fullName}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Phone</p>
-              <p className="font-medium">{user.phone || '—'}</p>
+    <div className="bg-[#f9f9ff] min-h-screen">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Account Settings</h1>
+          <p className="text-base text-gray-500 mt-1">Manage your profile, roles, and preferences.</p>
+        </div>
+
+        {/* Profile Summary Card */}
+        <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-6 sm:p-8 mb-6">
+          <div className="flex items-center gap-5">
+            <span className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary-600 text-white text-xl sm:text-2xl font-bold shrink-0">
+              {initials}
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{user.fullName}</h2>
+              <p className="text-sm text-gray-500 mt-0.5">@{user.username}</p>
+              <p className="text-sm text-gray-500 truncate">{user.email}</p>
+              {activeRole && (
+                <div className="mt-2">
+                  <Badge variant={roleBadgeVariant(activeRole)} size="sm">
+                    {activeRole}
+                  </Badge>
+                </div>
+              )}
             </div>
           </div>
+        </div>
 
-          <div className="border-t pt-4">
-            <p className="text-sm text-gray-500 mb-2">Owned Roles</p>
-            <div className="flex flex-wrap gap-2">
-              {roles.map((role) => (
-                <Badge key={role} variant={roleBadgeVariant(role)} size="md">
-                  {role}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          <div className="border-t pt-4">
-            <p className="text-sm text-gray-500 mb-2">Active Role</p>
-            {activeRole ? (
-              <div className="flex items-center gap-2">
-                <Badge variant={roleBadgeVariant(activeRole)} size="md">{activeRole}</Badge>
+        <div className="space-y-6">
+          {/* Personal Information */}
+          <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Personal Information</h2>
+            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-5">
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Username</p>
+                <p className="text-sm font-medium text-gray-900">{user.username}</p>
               </div>
-            ) : (
-              <p className="text-sm text-gray-400 italic">No active role selected</p>
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Email</p>
+                <p className="text-sm font-medium text-gray-900">{user.email}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Full Name</p>
+                <p className="text-sm font-medium text-gray-900">{user.fullName}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Phone</p>
+                <p className="text-sm font-medium text-gray-900">{user.phone || '—'}</p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-4 pt-4 border-t border-gray-100">
+              Profile editing is not currently available. Contact support to update your details.
+            </p>
+          </div>
+
+          {/* Roles */}
+          <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Roles</h2>
+
+            {/* Owned Roles */}
+            <div className="mb-6">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                Your Roles
+              </p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {roles.map((role) => {
+                  const isActive = role === activeRole;
+                  const colorClass = ROLE_COLORS[role] || 'border-gray-200 bg-gray-50';
+                  const iconColor = ROLE_ICONS[role] || '#6b7280';
+                  return (
+                    <div
+                      key={role}
+                      className={`flex items-center gap-3 rounded-xl border p-4 ${
+                        isActive ? colorClass + ' ring-2 ring-offset-1 ring-primary-500/20' : 'border-gray-200 bg-white'
+                      }`}
+                    >
+                      <svg className="w-8 h-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-900">{role}</p>
+                        {isActive && (
+                          <p className="text-xs font-medium text-primary-600 mt-0.5">Currently active</p>
+                        )}
+                      </div>
+                      {isActive && (
+                        <svg className="w-5 h-5 text-primary-600 ml-auto shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Switch Role */}
+            {roles.length > 1 && (
+              <div className="border-t border-gray-100 pt-5">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                  Switch Active Role
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  {roles.filter((r) => r !== activeRole).map((role) => (
+                    <Button
+                      key={role}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleSwitchRole(role)}
+                    >
+                      Switch to {role}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
-
-          {roles.length > 1 && (
-            <div className="border-t pt-4">
-              <p className="text-sm text-gray-500 mb-3">Switch Active Role</p>
-              <div className="flex flex-wrap gap-2">
-                {roles.filter((r) => r !== activeRole).map((role) => (
-                  <Button key={role} variant="outline" size="sm" onClick={() => handleSwitchRole(role)}>
-                    Switch to {role}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
-      </Card>
+      </div>
     </div>
   );
 }
