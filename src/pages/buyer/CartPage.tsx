@@ -7,7 +7,7 @@ import {
 } from '../../hooks/useBuyer';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
-import Modal from '../../components/ui/Modal';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 import { formatPrice } from '../../types';
 import { useState } from 'react';
 
@@ -194,27 +194,17 @@ export default function CartPage() {
         </div>
       </Card>
 
-      <Modal
+      <ConfirmModal
         isOpen={clearModalOpen}
+        title="Clear Cart?"
+        message="This will remove all items from your cart. This action cannot be undone."
+        confirmLabel="Clear Cart"
+        cancelLabel="Cancel"
+        confirmVariant="danger"
+        loading={clearCartMutation.isPending}
         onClose={() => setClearModalOpen(false)}
-        title="Clear Cart"
-      >
-        <p className="text-sm text-gray-600 mb-6">
-          Are you sure you want to remove all items from your cart? This action cannot be undone.
-        </p>
-        <div className="flex justify-end gap-3">
-          <Button variant="ghost" onClick={() => setClearModalOpen(false)}>
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={handleClearCart}
-            loading={clearCartMutation.isPending}
-          >
-            Clear Cart
-          </Button>
-        </div>
-      </Modal>
+        onConfirm={handleClearCart}
+      />
     </div>
   );
 }
