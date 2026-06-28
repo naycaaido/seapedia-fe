@@ -6,12 +6,7 @@ import Badge from '../../components/ui/Badge';
 import ConfirmModal from '../../components/ui/ConfirmModal';
 import FeedbackBanner from '../../components/ui/FeedbackBanner';
 import { formatPrice } from '../../types';
-
-const DELIVERY_LABELS: Record<string, string> = {
-  INSTANT: 'Instant',
-  NEXT_DAY: 'Next Day',
-  REGULAR: 'Regular',
-};
+import { getDeliverySlaLabel } from '../../utils/delivery';
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('id-ID', {
@@ -113,7 +108,7 @@ export default function AvailableJobsPage() {
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">{formatDate(job.createdAt)}</p>
               </div>
-              <Badge variant="yellow">{DELIVERY_LABELS[job.deliveryMethod] || job.deliveryMethod}</Badge>
+              <Badge variant="yellow">{getDeliverySlaLabel(job.deliveryMethod)}</Badge>
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-sm mb-3">
