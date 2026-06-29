@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { useAuthStore } from '../store/auth';
 import { useReviews } from '../hooks/useReviews';
 import { useProducts } from '../hooks/useProducts';
 import Rating from '../components/ui/Rating';
@@ -61,7 +62,23 @@ function getStockLabel(stock: number): { label: string; className: string } {
   return { label: 'Habis', className: 'bg-red-50 text-red-700 border-red-200/50' };
 }
 
+const ROLE_START_PAGE: Record<string, string> = {
+  Admin: '/dashboard/admin',
+  Seller: '/dashboard/seller',
+  Buyer: '/products',
+  Driver: '/dashboard/driver',
+};
+
 export default function LandingPage() {
+  const { isAuthenticated, activeRole, roles } = useAuthStore();
+
+  if (isAuthenticated) {
+    if (activeRole) {
+      return <Navigate to={ROLE_START_PAGE[activeRole] || '/products'} replace />;
+    }
+    return <Navigate to="/role-selection" replace />;
+  }
+
   const { data: reviews } = useReviews();
   const { data: products, isLoading: productsLoading, isError: productsError } = useProducts();
 
