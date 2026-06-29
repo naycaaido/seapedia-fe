@@ -1,7 +1,10 @@
+import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
+import { validateImageFile } from '../types';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
-import { useNavigate } from 'react-router-dom';
+import FeedbackBanner from '../components/ui/FeedbackBanner';
 
 function getInitials(name: string): string {
   return name
@@ -27,8 +30,35 @@ const ROLE_ICONS: Record<string, string> = {
 };
 
 export default function ProfilePage() {
-  const { user, roles, activeRole, selectRole } = useAuthStore();
+  const { user, roles, activeRole, selectRole, uploadProfilePhoto } = useAuthStore();
   const navigate = useNavigate();
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [photoSuccess, setPhotoSuccess] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoError(null);
+    setPhotoSuccess(null);
+    const error = validateImageFile(file);
+    if (error) {
+      setPhotoError(error);
+      e.target.value = '';
+      return;
+    }
+    setPhotoUploading(true);
+    try {
+      await uploadProfilePhoto(file);
+      setPhotoSuccess('Profile photo updated.');
+    } catch (err: any) {
+      setPhotoError(err.message || 'Failed to upload photo.');
+    } finally {
+      setPhotoUploading(false);
+      e.target.value = '';
+    }
+  };
 
   const roleBadgeVariant = (role: string) => {
     const map: Record<string, 'blue' | 'green' | 'yellow' | 'red' | 'purple'> = {
@@ -71,16 +101,42 @@ export default function ProfilePage() {
 
         {/* Profile Summary Card */}
         <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-6 sm:p-8 mb-6">
-          <div className="flex items-center gap-5">
-            <span className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary-600 text-white text-xl sm:text-2xl font-bold shrink-0">
-              {initials}
-            </span>
-            <div className="min-w-0">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+            <div className="flex flex-col items-center gap-3 shrink-0">
+              {user.profileImageUrl ? (
+                <img
+                  src={user.profileImageUrl}
+                  alt={userName}
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-gray-100"
+                />
+              ) : (
+                <span className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary-600 text-white text-xl sm:text-2xl font-bold shrink-0">
+                  {initials}
+                </span>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handlePhotoChange}
+                disabled={photoUploading}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                loading={photoUploading}
+              >
+                {user.profileImageUrl ? 'Change Photo' : 'Upload Photo'}
+              </Button>
+            </div>
+            <div className="min-w-0 text-center sm:text-left">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{user.fullName}</h2>
               <p className="text-sm text-gray-500 mt-0.5">@{user.username}</p>
               <p className="text-sm text-gray-500 truncate">{user.email}</p>
               {activeRole && (
-                <div className="mt-2">
+                <div className="mt-2 flex justify-center sm:justify-start">
                   <Badge variant={roleBadgeVariant(activeRole)} size="sm">
                     {activeRole}
                   </Badge>
@@ -88,6 +144,16 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
+          {photoSuccess && (
+            <div className="mt-4">
+              <FeedbackBanner type="success" message={photoSuccess} onDismiss={() => setPhotoSuccess(null)} />
+            </div>
+          )}
+          {photoError && (
+            <div className="mt-4">
+              <FeedbackBanner type="error" message={photoError} onDismiss={() => setPhotoError(null)} />
+            </div>
+          )}
         </div>
 
         <div className="space-y-6">

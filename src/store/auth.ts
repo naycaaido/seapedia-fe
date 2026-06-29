@@ -17,6 +17,7 @@ interface AuthState {
   selectRole: (role: string) => Promise<void>;
   addRole: (role: string) => Promise<void>;
   fetchProfile: () => Promise<void>;
+  uploadProfilePhoto: (file: File) => Promise<void>;
   clearError: () => void;
 }
 
@@ -139,6 +140,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch {
       get().logout();
     }
+  },
+
+  uploadProfilePhoto: async (file) => {
+    const formData = new FormData();
+    formData.append('photo', file);
+    const data = await api.uploadPatch<{ user: User }>('/auth/profile-photo', formData);
+    set({ user: data.user });
   },
 
   clearError: () => set({ error: null }),

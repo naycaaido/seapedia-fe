@@ -155,9 +155,13 @@ export default function Navbar() {
                     aria-expanded={isProfileOpen}
                     aria-haspopup="menu"
                   >
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-600 text-white text-sm font-semibold">
-                      {initials}
-                    </span>
+                    {user?.profileImageUrl ? (
+                      <img src={user.profileImageUrl} alt={userName} className="w-8 h-8 rounded-full object-cover" />
+                    ) : (
+                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-600 text-white text-sm font-semibold">
+                        {initials}
+                      </span>
+                    )}
                     <span className={`text-sm font-medium transition-colors ${textColor} max-w-[100px] truncate`}>
                       {shortName}
                     </span>
@@ -178,9 +182,13 @@ export default function Navbar() {
                       {/* User Info */}
                       <div className="px-4 py-3 border-b border-gray-100">
                         <div className="flex items-center gap-3">
-                          <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary-600 text-white text-sm font-semibold">
-                            {initials}
-                          </span>
+                          {user?.profileImageUrl ? (
+                            <img src={user.profileImageUrl} alt={userName} className="w-10 h-10 rounded-full object-cover" />
+                          ) : (
+                            <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary-600 text-white text-sm font-semibold">
+                              {initials}
+                            </span>
+                          )}
                           <div className="min-w-0">
                             <p className="text-sm font-semibold text-gray-900 truncate">{userName}</p>
                             {user?.email && (
@@ -390,9 +398,13 @@ export default function Navbar() {
             <>
               {/* Mobile User Header */}
               <div className="flex items-center gap-3 pb-3 border-b border-gray-100 mb-2">
-                <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary-600 text-white text-sm font-semibold">
-                  {initials}
-                </span>
+                {user?.profileImageUrl ? (
+                  <img src={user.profileImageUrl} alt={userName} className="w-10 h-10 rounded-full object-cover" />
+                ) : (
+                  <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary-600 text-white text-sm font-semibold">
+                    {initials}
+                  </span>
+                )}
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-gray-900 truncate">{userName}</p>
                   {user?.email && <p className="text-xs text-gray-500 truncate">{user.email}</p>}
