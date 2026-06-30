@@ -52,11 +52,14 @@ function SummaryCard({ title, value, subtitle }: { title: string; value: string;
   );
 }
 
-function InsightCard({ title, value }: { title: string; value: string }) {
+function InsightCard({ title, value, helper }: { title: string; value: string; helper?: string }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-4">
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">{title}</p>
-      <p className="text-lg font-bold text-gray-900">{value}</p>
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-4 flex flex-col justify-between">
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">{title}</p>
+        <p className="text-lg font-bold text-gray-900">{value}</p>
+      </div>
+      {helper && <p className="text-[10px] text-gray-400 mt-1.5 leading-normal">{helper}</p>}
     </div>
   );
 }
@@ -73,14 +76,15 @@ function csvEscape(val: string | number | null | undefined): string {
 function generateCsv(rows: SellerIncomeExportRow[]): string {
   const headers = [
     'orderId', 'orderNumber', 'date', 'buyerName', 'status',
-    'deliveryMethod', 'subtotal', 'discountAmount', 'sellerIncome',
+    'deliveryMethod', 'subtotal', 'platformSubsidy', 'sellerIncome',
     'totalItems',
   ];
   const lines = [headers.join(',')];
   for (const r of rows) {
+    const subsidy = r.platformDiscountApplied ?? r.discountAmount;
     lines.push([
       r.orderId, r.orderNumber, r.date, r.buyerName, r.status,
-      r.deliveryMethod, r.subtotal, r.discountAmount, r.sellerIncome,
+      r.deliveryMethod, r.subtotal, subsidy, r.sellerIncome,
       r.totalItems,
     ].map(csvEscape).join(','));
   }
@@ -229,6 +233,7 @@ export default function SellerIncomeReportPage() {
   const topProduct = report.incomeByProduct && report.incomeByProduct.length > 0
     ? [...report.incomeByProduct].sort((a, b) => Number(b.totalIncome) - Number(a.totalIncome))[0]
     : null;
+  const platformDiscount = report.platformDiscountApplied ?? report.totalDiscountGiven ?? '0';
 
   return (
     <div className="bg-[#f9f9ff] min-h-screen">
@@ -292,6 +297,11 @@ export default function SellerIncomeReportPage() {
                   <span className="font-semibold text-gray-900">{report.totalOrders}</span> order{report.totalOrders !== 1 ? 's' : ''}.
                 </p>
               )}
+              {Number(platformDiscount) > 0 && (
+                <p className="text-sm text-gray-700">
+                  The platform subsidized <span className="font-semibold text-gray-900">{formatPrice(platformDiscount)}</span> in discounts for your buyers.
+                </p>
+              )}
               {report.netIncome !== null && report.netIncome !== undefined && (
                 <p className="text-sm text-gray-700">
                   Your current net income is <span className="font-semibold text-gray-900">{formatPrice(report.netIncome)}</span>.
@@ -307,10 +317,18 @@ export default function SellerIncomeReportPage() {
               <InsightCard title="Gross Sales" value={formatPrice(report.grossSales)} />
             )}
             {report.netIncome !== null && report.netIncome !== undefined && (
-              <InsightCard title="Net Income" value={formatPrice(report.netIncome)} />
+              <InsightCard
+                title="Net Income"
+                value={formatPrice(report.netIncome)}
+                helper="Net income reflects seller payout before any future platform fee."
+              />
             )}
-            {report.totalDiscountGiven !== null && report.totalDiscountGiven !== undefined && (
-              <InsightCard title="Discount Given" value={formatPrice(report.totalDiscountGiven)} />
+            {platformDiscount !== null && platformDiscount !== undefined && (
+              <InsightCard
+                title="Platform Subsidy"
+                value={formatPrice(platformDiscount)}
+                helper="Discounts are funded by the platform and do not reduce your seller income."
+              />
             )}
             {report.totalItemsSold !== null && report.totalItemsSold !== undefined && (
               <InsightCard title="Items Sold" value={report.totalItemsSold.toLocaleString('id-ID')} />
@@ -384,10 +402,10 @@ export default function SellerIncomeReportPage() {
                     </div>
                   )}
 
-                  {report.totalDiscountGiven !== null && report.totalDiscountGiven !== undefined && (
+                  {platformDiscount !== null && platformDiscount !== undefined && (
                     <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 mb-1">
-                      <span className="text-sm text-gray-700">Discount given</span>
-                      <span className="text-xs text-amber-600 font-medium">{formatPrice(report.totalDiscountGiven)}</span>
+                      <span className="text-sm text-gray-700">Platform subsidy</span>
+                      <span className="text-xs text-amber-600 font-medium">{formatPrice(platformDiscount)}</span>
                     </div>
                   )}
                   {report.grossSales !== null && report.grossSales !== undefined && report.netIncome !== null && report.netIncome !== undefined && (

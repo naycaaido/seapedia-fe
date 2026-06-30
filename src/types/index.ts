@@ -94,6 +94,7 @@ export interface SellerIncomeReport {
   totalItemsSold?: number | null;
   grossSales?: string | null;
   totalDiscountGiven?: string | null;
+  platformDiscountApplied?: string | null;
   netIncome?: string | null;
   monthlyTrend?: SellerIncomeMonthlyTrendItem[] | null;
   incomeByProduct?: IncomeByProductItem[] | null;
@@ -136,6 +137,7 @@ export interface SellerIncomeExportRow {
   deliveryMethod: string;
   subtotal: string;
   discountAmount: string;
+  platformDiscountApplied?: string | null;
   sellerIncome: string;
   totalItems: number;
 }
