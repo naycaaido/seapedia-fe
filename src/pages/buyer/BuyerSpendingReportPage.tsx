@@ -104,54 +104,33 @@ function MonthlyTrendChart({ data }: { data: MonthlyTrendItem[] }) {
   const maxSpending = Math.max(...data.map((d) => Number(d.totalSpending)));
   if (maxSpending === 0) return null;
 
+  if (data.length === 1) {
+    const item = data[0];
+    return (
+      <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 text-center">
+        <p className="text-sm font-semibold text-gray-900">{item.month}</p>
+        <p className="text-2xl font-bold text-primary-600 mt-1">{formatPrice(item.totalSpending)}</p>
+        <p className="text-xs text-gray-500 mt-0.5">{item.totalOrders} order{item.totalOrders !== 1 ? 's' : ''}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {data.map((item) => {
         const pct = (Number(item.totalSpending) / maxSpending) * 100;
         return (
-          <div key={item.month} className="flex items-center gap-3">
-            <span className="text-xs text-gray-500 w-20 shrink-0 text-right">{item.month}</span>
-            <div className="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
+          <div key={item.month} className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 w-16 shrink-0 text-right">{item.month}</span>
+            <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
               <div
                 className="bg-primary-500 h-full rounded-full transition-all"
                 style={{ width: `${Math.max(pct, 1)}%` }}
               />
             </div>
-            <span className="text-xs text-gray-700 w-28 shrink-0 text-right font-medium">
-              {formatPrice(item.totalSpending)} ({item.totalOrders} order{item.totalOrders !== 1 ? 's' : ''})
+            <span className="text-xs text-gray-700 w-24 shrink-0 text-right font-medium">
+              {formatPrice(item.totalSpending)}
             </span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function SpendingByStoreChart({ data }: { data: SpendingByStoreItem[] }) {
-  if (!data || data.length === 0) return null;
-  const maxSpending = Math.max(...data.map((d) => Number(d.totalSpending)));
-  if (maxSpending === 0) return null;
-
-  const sorted = [...data].sort((a, b) => Number(b.totalSpending) - Number(a.totalSpending));
-
-  return (
-    <div className="space-y-3">
-      {sorted.map((item) => {
-        const pct = (Number(item.totalSpending) / maxSpending) * 100;
-        return (
-          <div key={item.storeName}>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-medium text-gray-700 truncate mr-2">{item.storeName}</span>
-              <span className="text-xs text-gray-500 shrink-0">
-                {formatPrice(item.totalSpending)} · {item.totalOrders} order{item.totalOrders !== 1 ? 's' : ''}
-              </span>
-            </div>
-            <div className="bg-gray-100 rounded-full h-3 overflow-hidden">
-              <div
-                className="bg-emerald-500 h-full rounded-full transition-all"
-                style={{ width: `${Math.max(pct, 1)}%` }}
-              />
-            </div>
           </div>
         );
       })}
@@ -218,7 +197,7 @@ export default function BuyerSpendingReportPage() {
 
   return (
     <div className="bg-[#f9f9ff] min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+      <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Spending Report</h1>
@@ -262,14 +241,11 @@ export default function BuyerSpendingReportPage() {
             {report.totalDeliveryFees !== null && report.totalDeliveryFees !== undefined && (
               <InsightCard title="Delivery Fees" value={formatPrice(report.totalDeliveryFees)} />
             )}
-            {report.totalTaxPaid !== null && report.totalTaxPaid !== undefined && (
-              <InsightCard title="Tax Paid" value={formatPrice(report.totalTaxPaid)} />
-            )}
             {report.totalItemsPurchased !== null && report.totalItemsPurchased !== undefined && (
               <InsightCard title="Items Purchased" value={report.totalItemsPurchased.toLocaleString('id-ID')} />
             )}
             {report.highestSpendingMonth && (
-              <InsightCard title="Highest Month" value={report.highestSpendingMonth} />
+              <InsightCard title="Highest Month" value={`${report.highestSpendingMonth.label} • ${formatPrice(report.highestSpendingMonth.totalSpending)}`} />
             )}
             {report.latestOrderDate && (
               <InsightCard title="Latest Order" value={formatDate(report.latestOrderDate)} />
@@ -291,147 +267,161 @@ export default function BuyerSpendingReportPage() {
 
         {hasOrders && (
           <>
-            {report.monthlyTrend && report.monthlyTrend.length > 0 && (
-              <Card header={<h2 className="text-lg font-semibold text-gray-900">Monthly Spending Trend</h2>}>
-                <MonthlyTrendChart data={report.monthlyTrend} />
-              </Card>
-            )}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                {report.monthlyTrend && report.monthlyTrend.length > 0 && (
+                  <Card header={<h2 className="text-lg font-semibold text-gray-900">Monthly Spending Trend</h2>}>
+                    <MonthlyTrendChart data={report.monthlyTrend} />
+                  </Card>
+                )}
+              </div>
 
-            {report.spendingByStore && report.spendingByStore.length > 0 && (
-              <Card header={<h2 className="text-lg font-semibold text-gray-900">Spending by Store</h2>}>
-                <SpendingByStoreChart data={report.spendingByStore} />
-              </Card>
-            )}
-
-            {report.spendingByDeliveryMethod && report.spendingByDeliveryMethod.length > 0 && (
-              <Card header={<h2 className="text-lg font-semibold text-gray-900">Spending by Delivery Method</h2>}>
-                <div className="grid sm:grid-cols-3 gap-3">
-                  {report.spendingByDeliveryMethod.map((item) => (
-                    <div
-                      key={item.deliveryMethod}
-                      className="bg-gray-50 rounded-lg border border-gray-100 p-4 text-center"
-                    >
-                      <p className="text-sm font-semibold text-gray-900">
-                        {DELIVERY_LABELS[item.deliveryMethod] || item.deliveryMethod}
-                      </p>
-                      <p className="text-lg font-bold text-gray-900 mt-1">{formatPrice(item.totalSpending)}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{item.totalOrders} order{item.totalOrders !== 1 ? 's' : ''}</p>
+              <div>
+                <Card header={<h2 className="text-lg font-semibold text-gray-900">Spending Breakdown</h2>}>
+                  {report.spendingByStore && report.spendingByStore.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Top Store</p>
+                      {(() => {
+                        const top = [...report.spendingByStore].sort((a, b) => Number(b.totalSpending) - Number(a.totalSpending))[0];
+                        return (
+                          <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                            <span className="text-sm font-medium text-gray-900 truncate mr-2">{top.storeName}</span>
+                            <span className="text-xs text-gray-600 shrink-0">{formatPrice(top.totalSpending)}</span>
+                          </div>
+                        );
+                      })()}
                     </div>
-                  ))}
-                </div>
-              </Card>
-            )}
+                  )}
 
-            {report.spendingByStatus && report.spendingByStatus.length > 0 && (
-              <Card header={<h2 className="text-lg font-semibold text-gray-900">Spending by Status</h2>}>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {report.spendingByStatus.map((item) => (
-                    <div
-                      key={item.status}
-                      className="flex items-center justify-between bg-gray-50 rounded-lg border border-gray-100 px-4 py-3"
-                    >
-                      <Badge variant={STATUS_VARIANTS[item.status] || 'gray'} size="sm">
-                        {STATUS_LABELS[item.status] || item.status}
-                      </Badge>
-                      <div className="text-right">
-                        <p className="text-sm font-bold text-gray-900">{formatPrice(item.totalSpending)}</p>
-                        <p className="text-xs text-gray-500">{item.totalOrders} order{item.totalOrders !== 1 ? 's' : ''}</p>
+                  {report.spendingByDeliveryMethod && report.spendingByDeliveryMethod.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Delivery Method</p>
+                      <div className="space-y-1">
+                        {report.spendingByDeliveryMethod.slice(0, 3).map((item) => (
+                          <div key={item.deliveryMethod} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                            <span className="text-sm text-gray-700">{DELIVERY_LABELS[item.deliveryMethod] || item.deliveryMethod}</span>
+                            <span className="text-xs text-gray-600">{formatPrice(item.totalSpending)}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </Card>
-            )}
+                  )}
 
-            {report.topProducts && report.topProducts.length > 0 && (
-              <Card header={<h2 className="text-lg font-semibold text-gray-900">Top Purchased Products</h2>}>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-200 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                        <th className="pb-2 pr-4">Product</th>
-                        <th className="pb-2 pr-4 text-right">Qty</th>
-                        <th className="pb-2 text-right">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {report.topProducts.map((item, idx) => (
-                        <tr key={idx} className="border-b border-gray-100 last:border-0">
-                          <td className="py-2.5 pr-4 text-gray-900 font-medium">
-                            {item.productName || 'Unavailable product'}
-                          </td>
-                          <td className="py-2.5 pr-4 text-right text-gray-600">{item.quantity}</td>
-                          <td className="py-2.5 text-right text-gray-900 font-medium">
-                            {formatPrice(item.totalSpending)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
-            )}
-
-            {report.exportRows && report.exportRows.length > 0 && (
-              <Card
-                header={
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-gray-900">Recent Spending</h2>
-                    <Button variant="outline" size="sm" onClick={() => downloadCsv(report.exportRows!)}>
-                      Export CSV
-                    </Button>
-                  </div>
-                }
-              >
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-200 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                        <th className="pb-2 pr-3">Date</th>
-                        <th className="pb-2 pr-3">Order</th>
-                        <th className="pb-2 pr-3">Store</th>
-                        <th className="pb-2 pr-3">Status</th>
-                        <th className="pb-2 text-right">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {report.exportRows.slice(0, 10).map((row) => (
-                        <tr key={row.orderId} className="border-b border-gray-100 last:border-0">
-                          <td className="py-2.5 pr-3 text-gray-600 whitespace-nowrap">{formatDate(row.date)}</td>
-                          <td className="py-2.5 pr-3 text-gray-900 font-medium">{row.orderNumber}</td>
-                          <td className="py-2.5 pr-3 text-gray-600">{row.storeName}</td>
-                          <td className="py-2.5 pr-3">
-                            <Badge variant={STATUS_VARIANTS[row.status] || 'gray'} size="sm">
-                              {STATUS_LABELS[row.status] || row.status}
+                  {report.spendingByStatus && report.spendingByStatus.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Status</p>
+                      <div className="space-y-1">
+                        {report.spendingByStatus.slice(0, 3).map((item) => (
+                          <div key={item.status} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                            <Badge variant={STATUS_VARIANTS[item.status] || 'gray'} size="sm">
+                              {STATUS_LABELS[item.status] || item.status}
                             </Badge>
-                          </td>
-                          <td className="py-2.5 text-right text-gray-900 font-medium">
-                            {formatPrice(row.totalAmount)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
-            )}
+                            <span className="text-xs text-gray-600">{formatPrice(item.totalSpending)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-            <Card>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Keep tracking your orders</h2>
-                  <p className="text-sm text-gray-500 mt-1">Review your recent purchases and monitor future spending from your orders page.</p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link to="/buyer/orders">
-                    <Button>View Orders</Button>
-                  </Link>
-                  <Link to="/products">
-                    <Button variant="outline">Browse Products</Button>
-                  </Link>
-                </div>
+                  {report.totalDiscountUsed !== null && report.totalDiscountUsed !== undefined && (
+                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                      <span className="text-sm text-gray-700">Discount saved</span>
+                      <span className="text-xs font-medium text-green-600">{formatPrice(report.totalDiscountUsed)}</span>
+                    </div>
+                  )}
+                  {report.totalDeliveryFees !== null && report.totalDeliveryFees !== undefined && (
+                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 mt-1">
+                      <span className="text-sm text-gray-700">Delivery fees</span>
+                      <span className="text-xs text-gray-600">{formatPrice(report.totalDeliveryFees)}</span>
+                    </div>
+                  )}
+                </Card>
               </div>
-            </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {report.topProducts && report.topProducts.length > 0 && (
+                <Card header={<h2 className="text-lg font-semibold text-gray-900">Top Purchased Products</h2>}>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                          <th className="pb-2 pr-3">Product</th>
+                          <th className="pb-2 pr-3 text-right">Qty</th>
+                          <th className="pb-2 text-right">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {report.topProducts.slice(0, 5).map((item, idx) => (
+                          <tr key={idx} className="border-b border-gray-100 last:border-0">
+                            <td className="py-2 pr-3 text-gray-900 font-medium max-w-[180px] truncate">
+                              {item.productName || 'Unavailable product'}
+                            </td>
+                            <td className="py-2 pr-3 text-right text-gray-600">{item.quantity}</td>
+                            <td className="py-2 text-right text-gray-900 font-medium">
+                              {formatPrice(item.totalSpending)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              )}
+
+              {report.exportRows && report.exportRows.length > 0 && (
+                <Card
+                  header={
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-lg font-semibold text-gray-900">Recent Spending</h2>
+                      <Button variant="outline" size="sm" onClick={() => downloadCsv(report.exportRows!)}>
+                        Export CSV
+                      </Button>
+                    </div>
+                  }
+                >
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                          <th className="pb-2 pr-3">Date</th>
+                          <th className="pb-2 pr-3">Order</th>
+                          <th className="pb-2 pr-3">Store</th>
+                          <th className="pb-2 text-right">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {report.exportRows.slice(0, 5).map((row) => (
+                          <tr key={row.orderId} className="border-b border-gray-100 last:border-0">
+                            <td className="py-2 pr-3 text-gray-600 whitespace-nowrap">{formatDate(row.date)}</td>
+                            <td className="py-2 pr-3 text-gray-900 font-medium">{row.orderNumber}</td>
+                            <td className="py-2 pr-3 text-gray-600">{row.storeName}</td>
+                            <td className="py-2 text-right text-gray-900 font-medium">
+                              {formatPrice(row.totalAmount)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              )}
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Keep tracking your orders</p>
+                <p className="text-xs text-gray-500 mt-0.5">Review recent purchases from your orders page.</p>
+              </div>
+              <div className="flex gap-2">
+                <Link to="/buyer/orders">
+                  <Button size="sm">View Orders</Button>
+                </Link>
+                <Link to="/products">
+                  <Button variant="outline" size="sm">Browse Products</Button>
+                </Link>
+              </div>
+            </div>
           </>
         )}
       </div>

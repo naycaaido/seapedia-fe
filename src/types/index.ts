@@ -89,7 +89,7 @@ export interface SellerIncomeReport {
   totalIncome: string;
   totalOrders: number;
   averageIncomePerOrder: string;
-  highestIncomeMonth?: string | null;
+  highestIncomeMonth?: { month: string; label: string; totalIncome: string; totalOrders: number } | null;
   latestIncomeDate?: string | null;
   totalItemsSold?: number | null;
   grossSales?: string | null;
@@ -144,7 +144,7 @@ export interface BuyerSpendingReport {
   totalSpending: string;
   totalOrders: number;
   averageOrderValue: string;
-  highestSpendingMonth?: string | null;
+  highestSpendingMonth?: { month: string; label: string; totalSpending: string; totalOrders: number } | null;
   latestOrderDate?: string | null;
   totalDiscountUsed?: string | null;
   totalDeliveryFees?: string | null;
@@ -504,7 +504,7 @@ export interface DriverEarningsSummary {
   earnings: DriverEarning[];
   totalDeliveries?: number | null;
   averageEarningPerDelivery?: string | null;
-  highestEarningMonth?: string | null;
+  highestEarningMonth?: { month: string; label: string; totalEarnings: string; totalDeliveries: number } | null;
   latestEarningDate?: string | null;
   totalDeliveryFees?: string | null;
   averageDeliveryFee?: string | null;
