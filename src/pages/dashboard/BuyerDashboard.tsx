@@ -20,15 +20,6 @@ const STATUS_VARIANTS: Record<string, 'blue' | 'yellow' | 'purple' | 'green' | '
   DIKEMBALIKAN: 'red',
 };
 
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
-
 export default function BuyerDashboard() {
   const { user, activeRole } = useAuthStore();
   const { data: wallet, isLoading: walletLoading, isError: walletError } = useWallet();
@@ -39,7 +30,6 @@ export default function BuyerDashboard() {
   const cartItemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
   const recentOrders = orders?.slice(0, 3) || [];
   const userName = user?.fullName || user?.username || 'User';
-  const initials = getInitials(userName);
 
   const getWelcomeText = () => {
     const hour = new Date().getHours();
@@ -53,30 +43,10 @@ export default function BuyerDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">My Account</h1>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+            {getWelcomeText()}, {userName}
+          </h1>
           <p className="text-base text-gray-500 mt-1">Manage your wallet, orders, and settings.</p>
-        </div>
-
-        {/* Account Hero Card */}
-        <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-6 sm:p-8 mb-8">
-          <div className="flex items-center gap-4 sm:gap-6">
-            <span className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary-600 text-white text-xl sm:text-2xl font-bold shrink-0">
-              {initials}
-            </span>
-            <div className="min-w-0">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{userName}</h2>
-              <p className="text-sm text-gray-500 mt-0.5">
-                {getWelcomeText()}, welcome to your account.
-              </p>
-              <div className="flex items-center gap-2 mt-2">
-                {activeRole && (
-                  <Badge variant="green" size="sm">
-                    {activeRole}
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Summary Cards Grid */}

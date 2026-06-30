@@ -1,7 +1,11 @@
+import { useRef, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
+import { validateImageFile } from '../types';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
-import { useNavigate } from 'react-router-dom';
+import Input from '../components/ui/Input';
+import FeedbackBanner from '../components/ui/FeedbackBanner';
 
 function getInitials(name: string): string {
   return name
@@ -27,8 +31,76 @@ const ROLE_ICONS: Record<string, string> = {
 };
 
 export default function ProfilePage() {
-  const { user, roles, activeRole, selectRole } = useAuthStore();
+  const { user, roles, activeRole, selectRole, uploadProfilePhoto, updateProfile } = useAuthStore();
   const navigate = useNavigate();
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [photoSuccess, setPhotoSuccess] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [profileUpdating, setProfileUpdating] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
+  const [profileFormErrors, setProfileFormErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (user) {
+      setFullName(user.fullName || '');
+      setPhone(user.phone || '');
+    }
+  }, [user]);
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoError(null);
+    setPhotoSuccess(null);
+    const error = validateImageFile(file);
+    if (error) {
+      setPhotoError(error);
+      e.target.value = '';
+      return;
+    }
+    setPhotoUploading(true);
+    try {
+      await uploadProfilePhoto(file);
+      setPhotoSuccess('Profile photo updated.');
+    } catch (err: any) {
+      setPhotoError(err.message || 'Failed to upload photo.');
+    } finally {
+      setPhotoUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleProfileSave = async () => {
+    setProfileError(null);
+    setProfileSuccess(null);
+    const errors: Record<string, string> = {};
+    const trimmedName = fullName.trim();
+    const trimmedPhone = phone.trim();
+    if (!trimmedName) {
+      errors.fullName = 'Full name is required.';
+    } else if (trimmedName.length < 2) {
+      errors.fullName = 'Full name must be at least 2 characters.';
+    }
+    if (trimmedPhone && !/^(\+62|62|0)8[1-9][0-9]{6,10}$/.test(trimmedPhone.replace(/\s/g, ''))) {
+      errors.phone = 'Enter a valid Indonesian phone number.';
+    }
+    setProfileFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+    setProfileUpdating(true);
+    try {
+      await updateProfile({ fullName: trimmedName, phone: trimmedPhone || undefined });
+      setProfileSuccess('Profile updated.');
+    } catch (err: any) {
+      setProfileError(err.message || 'Failed to update profile.');
+    } finally {
+      setProfileUpdating(false);
+    }
+  };
 
   const roleBadgeVariant = (role: string) => {
     const map: Record<string, 'blue' | 'green' | 'yellow' | 'red' | 'purple'> = {
@@ -59,6 +131,7 @@ export default function ProfilePage() {
 
   const userName = user.fullName || user.username;
   const initials = getInitials(userName);
+  const hasProfileChanged = fullName.trim() !== (user.fullName || '') || phone.trim() !== (user.phone || '');
 
   return (
     <div className="bg-[#f9f9ff] min-h-screen">
@@ -71,16 +144,42 @@ export default function ProfilePage() {
 
         {/* Profile Summary Card */}
         <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-6 sm:p-8 mb-6">
-          <div className="flex items-center gap-5">
-            <span className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary-600 text-white text-xl sm:text-2xl font-bold shrink-0">
-              {initials}
-            </span>
-            <div className="min-w-0">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+            <div className="flex flex-col items-center gap-3 shrink-0">
+              {user.profileImageUrl ? (
+                <img
+                  src={user.profileImageUrl}
+                  alt={userName}
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-gray-100"
+                />
+              ) : (
+                <span className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary-600 text-white text-xl sm:text-2xl font-bold shrink-0">
+                  {initials}
+                </span>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handlePhotoChange}
+                disabled={photoUploading}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                loading={photoUploading}
+              >
+                {user.profileImageUrl ? 'Change Photo' : 'Upload Photo'}
+              </Button>
+            </div>
+            <div className="min-w-0 text-center sm:text-left">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{user.fullName}</h2>
               <p className="text-sm text-gray-500 mt-0.5">@{user.username}</p>
               <p className="text-sm text-gray-500 truncate">{user.email}</p>
               {activeRole && (
-                <div className="mt-2">
+                <div className="mt-2 flex justify-center sm:justify-start">
                   <Badge variant={roleBadgeVariant(activeRole)} size="sm">
                     {activeRole}
                   </Badge>
@@ -88,13 +187,23 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
+          {photoSuccess && (
+            <div className="mt-4">
+              <FeedbackBanner type="success" message={photoSuccess} onDismiss={() => setPhotoSuccess(null)} />
+            </div>
+          )}
+          {photoError && (
+            <div className="mt-4">
+              <FeedbackBanner type="error" message={photoError} onDismiss={() => setPhotoError(null)} />
+            </div>
+          )}
         </div>
 
         <div className="space-y-6">
           {/* Personal Information */}
           <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Personal Information</h2>
-            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-5">
+            <div className="grid sm:grid-cols-2 gap-x-6 gap-y-4">
               <div>
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Username</p>
                 <p className="text-sm font-medium text-gray-900">{user.username}</p>
@@ -103,18 +212,43 @@ export default function ProfilePage() {
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Email</p>
                 <p className="text-sm font-medium text-gray-900">{user.email}</p>
               </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Full Name</p>
-                <p className="text-sm font-medium text-gray-900">{user.fullName}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Phone</p>
-                <p className="text-sm font-medium text-gray-900">{user.phone || '—'}</p>
-              </div>
+              <Input
+                label="Full Name"
+                value={fullName}
+                onChange={(e) => { setFullName(e.target.value); setProfileSuccess(null); }}
+                error={profileFormErrors.fullName}
+              />
+              <Input
+                label="Phone"
+                value={phone}
+                onChange={(e) => { setPhone(e.target.value); setProfileSuccess(null); }}
+                error={profileFormErrors.phone}
+                placeholder="+628123456789"
+              />
             </div>
-            <p className="text-xs text-gray-400 mt-4 pt-4 border-t border-gray-100">
-              Profile editing is not currently available. Contact support to update your details.
-            </p>
+            {profileSuccess && (
+              <div className="mt-4">
+                <FeedbackBanner type="success" message={profileSuccess} onDismiss={() => setProfileSuccess(null)} />
+              </div>
+            )}
+            {profileError && (
+              <div className="mt-4">
+                <FeedbackBanner type="error" message={profileError} onDismiss={() => setProfileError(null)} />
+              </div>
+            )}
+            <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-3">
+              <Button
+                onClick={handleProfileSave}
+                loading={profileUpdating}
+                disabled={!hasProfileChanged && !profileUpdating}
+                size="sm"
+              >
+                Save Changes
+              </Button>
+              {!hasProfileChanged && !profileSuccess && (
+                <p className="text-xs text-gray-400">No changes to save.</p>
+              )}
+            </div>
           </div>
 
           {/* Roles */}

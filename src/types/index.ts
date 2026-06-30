@@ -4,6 +4,7 @@ export interface User {
   email: string;
   fullName: string;
   phone?: string | null;
+  profileImageUrl?: string | null;
 }
 
 export interface AuthResponse {
@@ -88,12 +89,118 @@ export interface SellerIncomeReport {
   totalIncome: string;
   totalOrders: number;
   averageIncomePerOrder: string;
+  highestIncomeMonth?: string | null;
+  latestIncomeDate?: string | null;
+  totalItemsSold?: number | null;
+  grossSales?: string | null;
+  totalDiscountGiven?: string | null;
+  netIncome?: string | null;
+  monthlyTrend?: SellerIncomeMonthlyTrendItem[] | null;
+  incomeByProduct?: IncomeByProductItem[] | null;
+  incomeByStatus?: SellerIncomeByStatusItem[] | null;
+  incomeByDeliveryMethod?: SellerIncomeByDeliveryMethodItem[] | null;
+  exportRows?: SellerIncomeExportRow[] | null;
+}
+
+export interface SellerIncomeMonthlyTrendItem {
+  month: string;
+  totalIncome: string;
+  totalOrders: number;
+}
+
+export interface IncomeByProductItem {
+  productName: string | null;
+  quantity: number;
+  grossSales: string;
+  totalIncome: string;
+}
+
+export interface SellerIncomeByStatusItem {
+  status: string;
+  totalIncome: string;
+  totalOrders: number;
+}
+
+export interface SellerIncomeByDeliveryMethodItem {
+  deliveryMethod: string;
+  totalIncome: string;
+  totalOrders: number;
+}
+
+export interface SellerIncomeExportRow {
+  orderId: number;
+  orderNumber: string;
+  date: string;
+  buyerName: string;
+  status: string;
+  deliveryMethod: string;
+  subtotal: string;
+  discountAmount: string;
+  sellerIncome: string;
+  totalItems: number;
 }
 
 export interface BuyerSpendingReport {
   totalSpending: string;
   totalOrders: number;
   averageOrderValue: string;
+  highestSpendingMonth?: string | null;
+  latestOrderDate?: string | null;
+  totalDiscountUsed?: string | null;
+  totalDeliveryFees?: string | null;
+  totalTaxPaid?: string | null;
+  totalItemsPurchased?: number | null;
+  monthlyTrend?: MonthlyTrendItem[] | null;
+  spendingByStore?: SpendingByStoreItem[] | null;
+  spendingByDeliveryMethod?: SpendingByDeliveryMethodItem[] | null;
+  spendingByStatus?: SpendingByStatusItem[] | null;
+  topProducts?: TopProductItem[] | null;
+  exportRows?: ExportRow[] | null;
+}
+
+export interface MonthlyTrendItem {
+  month: string;
+  totalSpending: string;
+  totalOrders: number;
+}
+
+export interface SpendingByStoreItem {
+  storeName: string;
+  totalSpending: string;
+  totalOrders: number;
+}
+
+export interface SpendingByDeliveryMethodItem {
+  deliveryMethod: string;
+  totalSpending: string;
+  totalOrders: number;
+}
+
+export interface SpendingByStatusItem {
+  status: string;
+  totalSpending: string;
+  totalOrders: number;
+}
+
+export interface TopProductItem {
+  productId: number;
+  productName: string | null;
+  quantity: number;
+  totalSpending: string;
+}
+
+export interface ExportRow {
+  orderId: number;
+  orderNumber: string;
+  date: string;
+  storeName: string;
+  status: string;
+  deliveryMethod: string;
+  subtotal: string;
+  discountAmount: string;
+  deliveryFee: string;
+  taxAmount: string;
+  totalAmount: string;
 }
 
 export interface CreateStorePayload {
@@ -395,6 +502,49 @@ export interface DriverEarningsSummary {
   totalCompletedJobs: number;
   averageEarningPerJob: string;
   earnings: DriverEarning[];
+  totalDeliveries?: number | null;
+  averageEarningPerDelivery?: string | null;
+  highestEarningMonth?: string | null;
+  latestEarningDate?: string | null;
+  totalDeliveryFees?: string | null;
+  averageDeliveryFee?: string | null;
+  averageDriverShare?: string | null;
+  monthlyTrend?: DriverMonthlyTrendItem[] | null;
+  earningsByDeliveryMethod?: DriverEarningsByDeliveryMethodItem[] | null;
+  earningsByStatus?: DriverEarningsByStatusItem[] | null;
+  exportRows?: DriverEarningsExportRow[] | null;
+}
+
+export interface DriverMonthlyTrendItem {
+  month: string;
+  totalEarnings: string;
+  totalDeliveries: number;
+}
+
+export interface DriverEarningsByDeliveryMethodItem {
+  deliveryMethod: string;
+  totalEarnings: string;
+  totalDeliveries: number;
+}
+
+export interface DriverEarningsByStatusItem {
+  status: string;
+  totalEarnings: string;
+  totalDeliveries: number;
+}
+
+export interface DriverEarningsExportRow {
+  earningId: number;
+  jobId: number;
+  orderId: number;
+  orderNumber: string;
+  date: string;
+  status: string;
+  deliveryMethod: string;
+  deliveryFee: string;
+  driverEarning: string;
+  storeName: string;
+  buyerName: string;
 }
 
 export const DELIVERY_FEES: Record<DeliveryMethod, number> = {
