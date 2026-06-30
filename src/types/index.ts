@@ -502,6 +502,49 @@ export interface DriverEarningsSummary {
   totalCompletedJobs: number;
   averageEarningPerJob: string;
   earnings: DriverEarning[];
+  totalDeliveries?: number | null;
+  averageEarningPerDelivery?: string | null;
+  highestEarningMonth?: string | null;
+  latestEarningDate?: string | null;
+  totalDeliveryFees?: string | null;
+  averageDeliveryFee?: string | null;
+  averageDriverShare?: string | null;
+  monthlyTrend?: DriverMonthlyTrendItem[] | null;
+  earningsByDeliveryMethod?: DriverEarningsByDeliveryMethodItem[] | null;
+  earningsByStatus?: DriverEarningsByStatusItem[] | null;
+  exportRows?: DriverEarningsExportRow[] | null;
+}
+
+export interface DriverMonthlyTrendItem {
+  month: string;
+  totalEarnings: string;
+  totalDeliveries: number;
+}
+
+export interface DriverEarningsByDeliveryMethodItem {
+  deliveryMethod: string;
+  totalEarnings: string;
+  totalDeliveries: number;
+}
+
+export interface DriverEarningsByStatusItem {
+  status: string;
+  totalEarnings: string;
+  totalDeliveries: number;
+}
+
+export interface DriverEarningsExportRow {
+  earningId: number;
+  jobId: number;
+  orderId: number;
+  orderNumber: string;
+  date: string;
+  status: string;
+  deliveryMethod: string;
+  deliveryFee: string;
+  driverEarning: string;
+  storeName: string;
+  buyerName: string;
 }
 
 export const DELIVERY_FEES: Record<DeliveryMethod, number> = {
