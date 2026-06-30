@@ -18,6 +18,7 @@ interface AuthState {
   addRole: (role: string) => Promise<void>;
   fetchProfile: () => Promise<void>;
   uploadProfilePhoto: (file: File) => Promise<void>;
+  updateProfile: (payload: { fullName?: string; phone?: string }) => Promise<void>;
   clearError: () => void;
 }
 
@@ -146,6 +147,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const formData = new FormData();
     formData.append('photo', file);
     const data = await api.uploadPatch<{ user: User }>('/auth/profile-photo', formData);
+    set({ user: data.user });
+  },
+
+  updateProfile: async (payload) => {
+    const data = await api.patch<{ user: User }>('/auth/profile', payload);
     set({ user: data.user });
   },
 
